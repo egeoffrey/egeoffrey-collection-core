@@ -2,6 +2,7 @@
 class Notifications extends Widget {
     constructor(id, widget) {
         super(id, widget)
+        this.max_items = 200
         this.listener = null
         this.filter_by = null
         this.show_only = "show_only" in this.widget ? this.widget["show_only"] : null
@@ -97,9 +98,11 @@ class Notifications extends Widget {
             message.recipient = "controller/db"
             message.command = "GET"
             message.args = severity
-            message.set("timeframe", "last_5_days")
             message.set("scope", "alerts")
-            message.set("max_items", 500)
+            message.set("start", -this.max_items)
+            message.set("end", -1)
+            message.set("withscores", true)
+            message.set("milliseconds", true)
             gui.sessions.register(message, {
             })
             this.send(message)

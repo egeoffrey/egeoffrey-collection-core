@@ -345,10 +345,7 @@ class Sensors extends Widget {
                     gui.confirm("Do you want to manually apply configured retention policies for sensor "+sensor_id+"?", function(result){ 
                         if (! result) return
                         sensor = this_class.sensors[sensor_id]
-                        console.log(this_class.hub)
-                        console.log(sensor)
                         if (this_class.hub != null && "retain" in sensor && sensor["retain"] in this_class.hub["retain"]) {
-                            
                             var message = new Message(gui)
                             message.recipient = "controller/db"
                             message.command = "PURGE_SENSOR"

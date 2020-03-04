@@ -171,15 +171,15 @@ class Value extends Widget {
 							if ("color_"+color in session["widget"]) {
 								var min, max
 								if (session["widget"]["color_"+color].includes("-")) {
-									var split = session["widget"]["color_"+color].split("-")
-									min = split[0]
-									max = split[1]
+                                    var match = session["widget"]["color_"+color].match(/^(-?[^-]+)-(-?[^-]+)$/)
+									min = match[1]
+									max = match[2]
 								}
 								else {
 									min = max = session["widget"]["color_"+color]
 								}
 								if (jQuery.isNumeric(min) && jQuery.isNumeric(max) && jQuery.isNumeric(value)) {
-									if (value > min && value <= max) text_color = color
+                                    if (min < value == value <= max) text_color = color
 								} else {
 									if (value == min) text_color = color
 								}

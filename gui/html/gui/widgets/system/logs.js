@@ -2,6 +2,7 @@
 class Logs extends Widget {
     constructor(id, widget) {
         super(id, widget)
+        this.max_items = 200
         this.listener = null
         this.live = true
         this.filter_by = null
@@ -122,9 +123,11 @@ class Logs extends Widget {
             message.recipient = "controller/db"
             message.command = "GET"
             message.args = severity
-            message.set("timeframe", "last_24_hours")
             message.set("scope", "logs")
-            message.set("max_items", 500)
+            message.set("start", -this.max_items)
+            message.set("end", -1)
+            message.set("withscores", true)
+            message.set("milliseconds", true)
             gui.sessions.register(message, {
             })
             this.send(message)
