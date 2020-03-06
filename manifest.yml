@@ -470,6 +470,6 @@ modules:
         placeholder: 70.11
         required: true
 package: egeoffrey-collection-core
-revision: 33
+revision: 34
 tags: collection core
 version: 1.0
