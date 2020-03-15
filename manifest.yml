@@ -354,30 +354,6 @@ modules:
         name: device_name
         placeholder: my_iPhone
         required: true
-- service/image:
-    description: Retrieve images from a url or by running a command
-    service_configuration:
-      pull:
-      - description: Download the image from this URL
-        format: string
-        name: url
-        placeholder: http://domain.com/image.jpg
-        required: false
-      - description: Run a command returning an image
-        format: string
-        name: command
-        placeholder: raspistill -w 640 -h 480 -o -
-        required: false
-      - description: Username if the URL requires basic authentication
-        format: string
-        name: username
-        placeholder: username
-        required: false
-      - description: Password if the URL requires basic authentication
-        format: string
-        name: password
-        placeholder: password
-        required: true
 - service/mqtt:
     description: Interact with sensors through a mqtt broker
     module_configuration:
@@ -470,6 +446,6 @@ modules:
         placeholder: 70.11
         required: true
 package: egeoffrey-collection-core
-revision: 34
+revision: 1
 tags: collection core
-version: 1.0
+version: 1.1

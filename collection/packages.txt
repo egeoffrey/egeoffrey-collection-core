@@ -12,7 +12,6 @@ egeoffrey/egeoffrey-service-csv:master
 egeoffrey/egeoffrey-service-earthquake:master
 egeoffrey/egeoffrey-service-fcc_weather:master
 egeoffrey/egeoffrey-service-icloud:master
-egeoffrey/egeoffrey-service-image:master
 egeoffrey/egeoffrey-service-mqtt:master
 egeoffrey/egeoffrey-service-openweathermap:master
 egeoffrey/egeoffrey-service-rss:master

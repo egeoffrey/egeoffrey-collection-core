@@ -122,13 +122,6 @@ To configure each module included in this package, once started, click on the *'
       - *username**: the username of the icloud account (e.g. username@email.com)
       - *password**: the password of the icloud account
       - *device_name**: the name of the device to monitor (e.g. my_iPhone)
-- **service/image**: retrieve images from a url or by running a command
-  - Service configuration:
-    - Mode 'pull':
-      - *url*: download the image from this URL (e.g. http://domain.com/image.jpg)
-      - *command*: run a command returning an image (e.g. raspistill -w 640 -h 480 -o -)
-      - *username*: username if the URL requires basic authentication (e.g. username)
-      - *password**: password if the URL requires basic authentication (e.g. password)
 - **service/mqtt**: interact with sensors through a mqtt broker
   - Module configuration:
     - *hostname**: the MQTT hostname to connect to (e.g. egeoffrey-gateway)
@@ -175,7 +168,7 @@ If you are a user willing to contribute to somebody's else package, submit your 
 
 Building is required only if you are the author of the package. To build a Docker image and automatically push it to [Docker Hub](https://hub.docker.com/r/egeoffrey/egeoffrey-collection-core), run the following command from within this package's directory:
 ```
-egeoffrey-cli build egeoffrey-collection-core <amd64|arm>
+egeoffrey-cli build egeoffrey-collection-core
 ```
 To function properly, when running in a Docker container, the following additional configuration settings has to be added to e.g. your docker-compose.yml file (when installing through egeoffrey-cli, this is not needed since done automatically upon installation):
 ```
@@ -204,4 +197,4 @@ collection core
 
 ## Version
 
-The version of this egeoffrey-collection-core is 1.0-34 on the master branch.
+The version of this egeoffrey-collection-core is 1.1-1 on the master branch.
