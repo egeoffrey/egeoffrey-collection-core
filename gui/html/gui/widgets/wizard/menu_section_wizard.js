@@ -41,7 +41,7 @@ class Menu_section_wizard extends Widget {
         ')
         // add link to advanced configuration
         var link = section_id == null ? "__new__" : section_id
-        $("#wizard_body").append('<a id="'+this.id+'_advanced_editor" class="float-right text-primary">Advanced Editor</a>')
+        $("#wizard_body").append('<a id="'+this.id+'_advanced_editor" class="float-right text-primary d-none">Advanced Editor</a>')
         $("#"+this.id+"_advanced_editor").unbind().click(function(this_class) {
             return function () {
                 $('#wizard').unbind('hidden.bs.modal')

@@ -205,6 +205,11 @@ modules:
       name: hostname
       placeholder: smtp.google.com
       required: true
+    - description: The port of the SMTP server
+      format: string
+      name: port
+      placeholder: 25
+      required: true
     - description: The username for authenticating against the SMTP server
       format: string
       name: username
@@ -229,7 +234,7 @@ modules:
       name: subject
       placeholder: House Notification
       required: true
-    - description: Template to use for the email's body
+    - description: Template to use for the email's body (with placehoders
       format: text
       name: template
       required: true
@@ -446,6 +451,6 @@ modules:
         placeholder: 70.11
         required: true
 package: egeoffrey-collection-core
-revision: 1
+revision: 2
 tags: collection core
 version: 1.1

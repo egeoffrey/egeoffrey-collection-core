@@ -35,14 +35,15 @@ class Rules extends Widget {
         // 1: rule
         // 2: severity
         // 3: type (hidden)
-        // 4: definitions
-        // 5: conditions
-        // 6: actions
-        // 7: disabled (hidden)
+		// 4: triggers
+        // 5: definitions
+        // 6: conditions
+        // 7: actions
+        // 8: disabled (hidden)
         var table = '\
             <table id="'+this.id+'_table" class="table table-bordered table-striped">\
                 <thead>\
-                    <tr><th>_rule_id_</th><th class="all">Rule</th><th>Severity</th><th>Type</th><th>Definitions</th><th>Conditions</th><th>Additional Actions</th><th>Disabled</th></tr>\
+                    <tr><th>_rule_id_</th><th class="all">Rule</th><th>Severity</th><th>Type</th><th>Triggers</th><th>Definitions</th><th>Conditions</th><th>Additional Actions</th><th>Disabled</th></tr>\
                 </thead>\
                 <tbody></tbody>\
             </table>'
@@ -60,11 +61,11 @@ class Rules extends Widget {
             "autoWidth": false,
             "columnDefs": [ 
                 {
-                    "targets" : [0, 3, 7],
+                    "targets" : [0, 3, 8],
                     "visible": false,
                 },
                 {
-                    "targets" : [7],
+                    "targets" : [8],
                     "width": 110,
                 },
                 {
@@ -163,6 +164,27 @@ class Rules extends Widget {
         if ("actions" in rule) {
             for (var action of rule["actions"]) actions = actions+action+"<br>"
         }
+		var triggers = ""
+		if (rule["type"] == "realtime" && "triggers" in rule) {
+			triggers = "<u>Sensor:</u><br>"
+			for (var trigger of rule["triggers"]) triggers = triggers+trigger+"<br>"
+		}
+		if (rule["type"] == "recurrent" && "schedule" in rule) {
+			if (rule["schedule"]["trigger"] == "cron") {
+				triggers = "<u>Cron:</u><br>"
+				if ("day" in rule["schedule"]) triggers = triggers+rule["schedule"]["day"]+" day<br>"
+				if ("hour" in rule["schedule"]) triggers = triggers+rule["schedule"]["hour"]+" hour<br>"
+				if ("minute" in rule["schedule"]) triggers = triggers+rule["schedule"]["minute"]+" minute<br>"
+				if ("second" in rule["schedule"]) triggers = triggers+rule["schedule"]["hour"]+" second<br>"
+			}
+			if (rule["schedule"]["trigger"] == "interval") {
+				triggers = "<u>Interval:</u><br>"
+				if ("days" in rule["schedule"]) triggers = triggers+rule["schedule"]["days"]+" days<br>"
+				if ("hours" in rule["schedule"]) triggers = triggers+rule["schedule"]["hours"]+" hours<br>"
+				if ("minutes" in rule["schedule"]) triggers = triggers+rule["schedule"]["minutes"]+" minutes<br>"
+				if ("seconds" in rule["schedule"]) triggers = triggers+rule["schedule"]["hours"]+" seconds<br>"
+			}
+		}
         var definitions = ""
         if ("macros" in rule) {
             definitions = definitions+"<u>%i%</u>:<br>"
@@ -187,6 +209,7 @@ class Rules extends Widget {
             description, 
             severity,
             rule["type"], 
+			this.disabled_item(triggers, disabled),
             this.disabled_item(definitions, disabled), 
             this.disabled_item(conditions, disabled), 
             format_multiline(this.disabled_item(actions, disabled), 30), 

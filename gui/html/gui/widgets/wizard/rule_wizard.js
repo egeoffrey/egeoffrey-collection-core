@@ -53,6 +53,9 @@ class Rule_wizard extends Widget {
                     <li class="nav-item">\
                         <a class="nav-link" id="'+this.id+'_tab_actions" data-toggle="pill" href="#'+this.id+'_tab_actions_content" role="tab" aria-controls="'+this.id+'_tab_actions_content" aria-selected="false">Actions</a>\
                     </li>\
+                    <li class="nav-item">\
+                        <a class="nav-link" id="'+this.id+'_tab_suppress" data-toggle="pill" href="#'+this.id+'_tab_suppress_content" role="tab" aria-controls="'+this.id+'_tab_suppress_content" aria-selected="false">Suppress</a>\
+                    </li>\
                 </ul>\
                 <div class="tab-content">\
                     <div class="tab-pane fade show active" id="'+this.id+'_tab_general_content" role="tabpanel" aria-labelledby="'+this.id+'_tab_general">\
@@ -249,12 +252,18 @@ class Rule_wizard extends Widget {
                             <button type="button" class="btn btn-default float-right" id="'+this.id+'_add_action"><i class="fas fa-plus"></i> Add Action</button>\
                         </div>\
                     </div>\
+                    <div class="tab-pane fade" id="'+this.id+'_tab_suppress_content" role="tabpanel" aria-labelledby="'+this.id+'_tab_suppress">\
+						<div class="form-group">\
+							<label>Maximum number of notifications from this rule to receive each hour</label>\
+							<input type="text" id="'+this.id+'_suppress_rate_hour" class="form-control" placeholder="e.g. 10">\
+						</div>\
+					</div>\
                 </div>\
             </form>\
         ')
         // add link to advanced configuration
         var link = rule_id == null ? "__new__" : rule_id
-        $("#wizard_body").append('<br><a id="'+this.id+'_advanced_editor" class="float-right text-primary">Advanced Editor</a>')
+        $("#wizard_body").append('<br><a id="'+this.id+'_advanced_editor" class="float-right text-primary d-none">Advanced Editor</a>')
         $("#"+this.id+"_advanced_editor").unbind().click(function(this_class) {
             return function () {
                 $('#wizard').unbind('hidden.bs.modal')
@@ -410,6 +419,14 @@ class Rule_wizard extends Widget {
                     if (! ("actions" in rule)) rule["actions"] = []
                     rule["actions"].push(this.value)
                 });
+                // suppressions
+				rule["suppress"] = {}
+				for (var item of ["rate_hour"]) {
+					var value = $("#"+this_class.id+"_suppress_"+item).val()
+					if (value == null || value == "") continue
+					rule["suppress"][item] = $.isNumeric(value) ? parseFloat(value) : value
+				}
+
                 // save new/updated configuration
                 var message = new Message(gui)
                 message.recipient = "controller/config"
@@ -718,6 +735,12 @@ class Rule_wizard extends Widget {
                 this.add_action(action, rule["actions"][action])
             }
         }
+		// populate suppressions
+		if ("suppress" in rule) {
+			for (var item of ["rate_hour"]) {
+				$("#"+this.id+"_suppress_"+item).val(rule["suppress"][item])
+			}
+		}
         $('#'+this.id+'_type').trigger("change")
         $('#'+this.id+'_schedule_trigger').trigger("change")
     }

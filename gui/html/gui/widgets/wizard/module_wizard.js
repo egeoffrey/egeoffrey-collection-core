@@ -70,7 +70,7 @@ class Module_wizard extends Widget {
         if (this.module_id.startsWith("notification/")) $('#'+this.id+'_tab_notification_suppress').parent('li').removeClass("d-none")
         // add link to advanced configuration
         var link = this.module_id == null ? "__new__" : this.module_id
-        $("#wizard_body").append('<br><a id="'+this.id+'_advanced_editor" class="float-right text-primary">Advanced Editor</a>')
+        $("#wizard_body").append('<br><a id="'+this.id+'_advanced_editor" class="float-right text-primary d-none">Advanced Editor</a>')
         $("#"+this.id+"_advanced_editor").unbind().click(function(this_class) {
             return function () {
                 $('#wizard').unbind('hidden.bs.modal')
@@ -172,7 +172,7 @@ class Module_wizard extends Widget {
                         var options_html = ""
                         if (required == "") options_html = options_html+'<option value=""></option>'
                         // draw a text input
-                        if (["int", "float", "string", "password"].includes(configuration["format"])) {
+                        if (["int", "float", "string", "text", "password"].includes(configuration["format"])) {
                             var placeholder = "placeholder" in configuration ? "e.g. "+configuration["placeholder"] : ""
                             var type = configuration["format"] == "password" ? "password" : "text"
                             input = '\
@@ -180,6 +180,13 @@ class Module_wizard extends Widget {
                                     <label>'+configuration["description"]+required_flag+'</label>\
                                     <input type="'+type+'" id="'+this.id+'_module_'+configuration["name"]+'" name="'+configuration["name"]+'" class="form-control" placeholder="'+placeholder+'" '+required+'>\
                                 </div>'
+							if (configuration["format"] == "text") {
+								input = '\
+                                <div class="form-group">\
+                                    <label>'+configuration["description"]+required_flag+'</label>\
+                                    <textarea rows="10" type="'+type+'" id="'+this.id+'_module_'+configuration["name"]+'" name="'+configuration["name"]+'" class="form-control" placeholder="'+placeholder+'" '+required+'></textarea>\
+                                </div>'
+							}
                         }
                         // draw a checkbox
                         else if (configuration["format"] == "checkbox") {

@@ -18,6 +18,11 @@ modules:
       name: hostname
       placeholder: smtp.google.com
       required: true
+    - description: The port of the SMTP server
+      format: string
+      name: port
+      placeholder: 25
+      required: true
     - description: The username for authenticating against the SMTP server
       format: string
       name: username
@@ -42,11 +47,11 @@ modules:
       name: subject
       placeholder: House Notification
       required: true
-    - description: Template to use for the email's body
+    - description: Template to use for the email's body (with placehoders
       format: text
       name: template
       required: true
 package: egeoffrey-notification-smtp
-revision: 12
+revision: 13
 tags: notification email
 version: 1.0

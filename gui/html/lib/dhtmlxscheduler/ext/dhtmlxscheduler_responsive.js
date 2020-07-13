@@ -74,7 +74,7 @@ function initResponsive(scheduler) {
 
 
 	if (/Android|webOS|iPhone|iPad|iPod|IEMobile/i.test(navigator.userAgent) && loadQuickInfo) {
-		addJS("/web/dhtmlxscheduler/ext/dhtmlxscheduler_quick_info.js", function () {
+		addJS("/lib/dhtmlxscheduler/ext/dhtmlxscheduler_quick_info.js", function () {
 			scheduler.config.touch = "force";
 			scheduler.xy.menu_width = 0;
 		});

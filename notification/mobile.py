@@ -69,7 +69,7 @@ class Mobile(Notification):
             self.log_warning("invalid response: "+response.text)
             return
         if response_json["success"] != len(devices):
-            self.log_warning("unable to notify all the devices ("+response_json["success"]+"/"+len(devices)+")")
+            self.log_warning("unable to notify all the devices ("+str(response_json["success"])+"/"+str(len(devices))+")")
             return
 
      # What to do when receiving a new/updated configuration for this module    

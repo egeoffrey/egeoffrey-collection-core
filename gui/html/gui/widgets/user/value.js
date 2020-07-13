@@ -3,6 +3,7 @@ class Value extends Widget {
     constructor(id, widget) {
         super(id, widget)
         this.timestamp = null
+		this.timestamp_tag = "#"+this.id+"_timestamp"
         this.timestamp_timer = null
         // add an empty box into the given column
         var icon = "icon" in this.widget ? this.widget["icon"] : "question"
@@ -36,7 +37,8 @@ class Value extends Widget {
         message.args = timestamp_sensor
         gui.sessions.register(message, {
             "component": "timestamp",
-            "sensor_id": sensor_id
+            "sensor_id": sensor_id,
+			"widget": this.widget
         })
         this.send(message)
         // ask for the icon (if the icon points to a sensor)
@@ -55,9 +57,8 @@ class Value extends Widget {
     
     // update the elapsed time based on the stored timestamp
     update_timestamp() {
-        var tag = "#"+this.id+"_timestamp"
-        if (this.timestamp == null) $(tag).html("");
-        else $(tag).html(gui.date.timestamp_difference(gui.date.now(), this.timestamp))
+        if (this.timestamp == null) $(this.timestamp_tag).html("");
+        else $(this.timestamp_tag).html(gui.date.timestamp_difference(gui.date.now(), this.timestamp))
     }
     
     // schedule to update the timestamp
@@ -214,6 +215,29 @@ class Value extends Widget {
                             $(tag+"_icon").removeClass().addClass("fa fa-plug")
                             if ($(tag+"_color").hasClass(target)) $(tag+"_color").removeClass().addClass(icon_class+" bg-green")
                             $(tag+"_value").html("ON")
+                        }
+                    } else {
+                        $(tag+"_value").html("N/A")
+                    }
+                }
+                // this is a heartbeat box
+				else if (session["widget"]["widget"] == "heartbeat") {
+					$(tag.replace("_value","_timestamp")).addClass("d-none")
+                    tag = tag.replace("_value","")
+                    if (data.length == 1) {
+                        var target = "info-box-icon"
+                        var icon_class = "info-box-icon"
+                        if ("variant" in this.widget && this.widget["variant"] == 2) {
+                            target = "small-box"
+                            icon_class = "small-box"
+                        }
+                        if (data[0] == 0) {
+                            $(tag+"_icon").removeClass().addClass("fa fa-heartbeat text-gray")
+                            if ($(tag+"_color").hasClass(target)) $(tag+"_color").removeClass().addClass(icon_class+" bg-white")
+                        }
+                        else if (data[0] == 1) {
+                            $(tag+"_icon").removeClass().addClass("fa text-green fa-heartbeat")
+                            if ($(tag+"_color").hasClass(target)) $(tag+"_color").removeClass().addClass(icon_class+" bg-white")
                         }
                     } else {
                         $(tag+"_value").html("N/A")
@@ -386,8 +410,13 @@ class Value extends Widget {
             }
             // add timestamp
             else if (session["component"] == "timestamp") {
-                this.timestamp = data.length != 1 ? null : data[0]
-                // update the timestsamp value
+				this.timestamp = data.length != 1 ? null : data[0]
+				if (session["widget"]["widget"] == "heartbeat") {
+					var tag = "#"+this.id+"_value"
+					this.timestamp_tag = "#"+this.id+"_value"
+					$(tag).html(gui.date.timestamp_difference(gui.date.now(), this.timestamp))
+				}
+                // update the timestamp value
                 this.update_timestamp()
                 // periodically refresh the elapsed time
                 if (this.timestamp_timer != null) clearInterval(this.timestamp_timer)

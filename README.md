@@ -76,12 +76,13 @@ To configure each module included in this package, once started, click on the *'
   - Module configuration:
     - *from**: the email address used as the from of the message (e.g. user@email.com)
     - *hostname**: the SMTP server used to send out the email (e.g. smtp.google.com)
+    - *port**: the port of the SMTP server (e.g. 25)
     - *username*: the username for authenticating against the SMTP server (e.g. username)
     - *password*: the password for authenticating against the SMTP server (e.g. password)
     - *tls**: use TLS
     - *to**: recipient email address(es), comma separated (e.g. user@email.com)
     - *subject**: subject of the email (e.g. House Notification)
-    - *template**: template to use for the email's body
+    - *template**: template to use for the email's body (with placehoders
 - **notification/mobile**: forward notifications to a list of configured devices running the eGeoffrey mobile app
   - Module configuration:
     - *devices**: list of tokens of the mobile devices to be notified, comma separated (to get the device token, open the eGeoffrey mobile app and tap on 'About') (e.g. Asadjaskld109213102312kljlcasldkd123)
@@ -197,4 +198,4 @@ collection core
 
 ## Version
 
-The version of this egeoffrey-collection-core is 1.1-1 on the master branch.
+The version of this egeoffrey-collection-core is 1.1-2 on the master branch.

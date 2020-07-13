@@ -4,8 +4,22 @@
 class Login {
     constructor() {
         this.watchdog = null
+		this.connections = new Connections()
         this.draw()
     }
+	
+	// reload the saved connection select
+	load_saved_connections() {
+		var connections = this.connections.get()
+		$("#saved_connections").empty()
+		$("#saved_connections").append(new Option("Load saved connection...", "__select__"));
+		if (connections != null) {
+			for (var connection_id in connections["connections"]) {
+				var connection = connections["connections"][connection_id]
+				$("#saved_connections").append(new Option(connection["EGEOFFREY_USERNAME"]+"@"+connection["EGEOFFREY_ID"]+" ("+connection["EGEOFFREY_GATEWAY_HOSTNAME"]+":"+connection["EGEOFFREY_GATEWAY_PORT"]+")", connection_id));
+			}
+		}
+	}
     
     // draw the login form
     draw() {
@@ -16,8 +30,7 @@ class Login {
             <form id="login_form">\
                 <div class="card card-primary">\
                     <div class="has-feedback">\
-                        <select class="form-control" id="language">\
-                            <option value="en">English</option>\
+                        <select class="form-control" id="saved_connections">\
                         </select>\
                     </div>\
                 </div>\
@@ -34,7 +47,7 @@ class Login {
                             <input type="input" class="form-control" placeholder="'+locale("login.gateway.hostname")+'" id="egeoffrey_gateway_hostname">\
                         </div>\
                         <div class="form-group has-feedback">\
-                            <input type="input" class="form-control" placeholder="'+locale("login.gateway.port")+'" id="egeoffrey_gateway_port">\
+                            <input type="input" class="form-control" placeholder="'+locale("login.gateway.port")+'" id="egeoffrey_gateway_port" value="443">\
                         </div>\
                         <div class="form-group has-feedback">\
                             <div class="checkbox icheck">\
@@ -56,7 +69,7 @@ class Login {
                     </div>\
                     <div class="card-body">\
                         <div class="form-group has-feedback">\
-                            <input type="input" class="form-control" placeholder="'+locale("login.house.id")+'" id="egeoffrey_id">\
+                            <input type="input" class="form-control" placeholder="'+locale("login.house.id")+'" id="egeoffrey_id" value="house">\
                         </div>\
                         <div class="form-group has-feedback">\
                             <input type="password" class="form-control" placeholder="'+locale("login.house.passcode")+'" id="egeoffrey_passcode">\
@@ -74,7 +87,7 @@ class Login {
                     </div>\
                     <div class="card-body">\
                         <div class="form-group has-feedback">\
-                            <input type="input" class="form-control" placeholder="'+locale("login.user.username")+'" id="egeoffrey_username">\
+                            <input type="input" class="form-control" placeholder="'+locale("login.user.username")+'" id="egeoffrey_username" value="guest">\
                         </div>\
                         <div class="form-group has-feedback">\
                             <input type="password" class="form-control" placeholder="'+locale("login.user.password")+'" id="egeoffrey_password">\
@@ -102,6 +115,13 @@ class Login {
                             <div class="checkbox icheck">\
                                 <label>\
                                     <input type="checkbox" id="egeoffrey_logging_remote"> Enable Remote Logging\
+                                </label>\
+                            </div>\
+                        </div>\
+                        <div class="form-group has-feedback">\
+                            <div class="checkbox icheck">\
+                                <label>\
+                                    <input type="checkbox" id="egeoffrey_remember_page" checked> Remember Last Opened Page\
                                 </label>\
                             </div>\
                         </div>\
@@ -152,7 +172,7 @@ class Login {
                 $("#login_button").prop("disabled", true)
                 $("#login_button").html(locale("login.connecting"))
                 $("#login_error").html("")
-                    // pull out the user's data and set the variables
+				// pull out the user's data from the form and set the variables the Gui class needs to access
                 window.EGEOFFREY_GATEWAY_HOSTNAME = $("#egeoffrey_gateway_hostname").val()
                 window.EGEOFFREY_GATEWAY_PORT = $("#egeoffrey_gateway_port").val()
                 window.EGEOFFREY_GATEWAY_SSL = $("#egeoffrey_gateway_ssl").is(":checked") ? 1 : 0
@@ -163,7 +183,12 @@ class Login {
                 window.EGEOFFREY_REMEMBER_ME = $("#egeoffrey_remember_me").is(":checked") ? 1 : 0
                 window.EGEOFFREY_DEBUG = $("#egeoffrey_debug").is(":checked") ? 1 : 0
                 window.EGEOFFREY_LOGGING_REMOTE = $("#egeoffrey_logging_remote").is(":checked") ? 1 : 0
-                    // create a new instance of the gui and run it
+				window.EGEOFFREY_REMEMBER_PAGE = $("#egeoffrey_remember_page").is(":checked") ? 1 : 0
+				// save user's connections
+				this_class.connections.save()
+				// reload the saved connection select
+				this_class.load_saved_connections()
+				// create a new instance of the gui and run it
                 window.gui = new Gui("gui", EGEOFFREY_USERNAME + "_" + this_class.generate_session_id())
                 this_class.restore_page()
                 window.gui.run()
@@ -180,15 +205,25 @@ class Login {
                 this_class.draw()
             };
         }(this))
-        // configure logout button
-        $("#user_logout").unbind().click(function() {
+        // configure saved connection selector
+		this.load_saved_connections()
+        $('#saved_connections').unbind().change(function(this_class) {
             return function () {
-                // clear stored credentials
-                localStorage.clear()
+				var connection_id = $('#saved_connections').val()
+				if (connection_id == "__select__") return
+				// get the selected connection and restore it
+				this_class.connections.restore(connection_id)
+            };
+        }(this))
+        // configure logout button
+        $("#user_logout").unbind().click(function(this_class) {
+            return function () {
+                // clear last connection
+                this_class.connections.save(true)
                 // disconnect
                 window.gui.logout()
             };
-        }());
+        }(this));
         // periodically check if the connection is established, otherwise show login page
         if (this.watchdog != null) clearInterval(this.watchdog)
         var this_class = this
@@ -202,17 +237,6 @@ class Login {
                 if (window.gui.connected) {
                     // connected
                     $("#login_error").html("")
-                        // remember user credentials if requested
-                    if ($("#egeoffrey_remember_me").is(":checked")) {
-                        localStorage.setItem("EGEOFFREY_GATEWAY_HOSTNAME", window.EGEOFFREY_GATEWAY_HOSTNAME)
-                        localStorage.setItem("EGEOFFREY_GATEWAY_PORT", window.EGEOFFREY_GATEWAY_PORT)
-                        localStorage.setItem("EGEOFFREY_GATEWAY_SSL", window.EGEOFFREY_GATEWAY_SSL)
-                        localStorage.setItem("EGEOFFREY_ID", window.EGEOFFREY_ID)
-                        localStorage.setItem("EGEOFFREY_PASSCODE", window.EGEOFFREY_PASSCODE)
-                        localStorage.setItem("EGEOFFREY_USERNAME", window.EGEOFFREY_USERNAME)
-                        localStorage.setItem("EGEOFFREY_PASSWORD", window.EGEOFFREY_PASSWORD)
-                        localStorage.setItem("EGEOFFREY_REMEMBER_ME", window.EGEOFFREY_REMEMBER_ME)
-                    } else localStorage.clear()
                     $("#login").modal("hide")
                     login_submit = false
                 } else {
@@ -227,17 +251,15 @@ class Login {
                     if (! window.gui.logged_in) {
                         // not connected, stop the current instance of the gui from connecting
                         window.gui.join()
-                        // set login information from previous settings
-                        $("#egeoffrey_gateway_hostname").val(gui.gateway_hostname)
-                        $("#egeoffrey_gateway_port").val(gui.gateway_port)
-                        if (gui.gateway_ssl) $("#egeoffrey_gateway_ssl").iCheck('check')
-                        else $("#egeoffrey_gateway_ssl").iCheck('uncheck')
-                        $("#egeoffrey_id").val(gui.house_id)
-                        $("#egeoffrey_passcode").val(gui.house_passcode)
-                        $("#egeoffrey_username").val(gui.username)
-                        $("#egeoffrey_password").val(gui.password)
-                        // show up the login screen
-                        $("#login").modal()
+						// if the user has selected a different connection login immediately without showing the login screen
+						if (window.EGEOFFREY_AUTOLOGON != null) {
+							window.EGEOFFREY_AUTOLOGON = null
+							$("#login_button").click()
+						} 
+						// show up the login screen
+						else {
+							$("#login").modal()
+						}
                     // otherwise the user may have been disconnected (e.g. network change, timeout, app in background, etc.)
                     } else {
                         // check if the gui is in foreground (no need to connect and connect if it is not)
@@ -252,12 +274,14 @@ class Login {
                     }
                 }
             }
-        }, 2000);
+        }, 3000);
     }
     
     // restore last opened page
     restore_page() {
-        if (localStorage.getItem("EGEOFFREY_CURRENT_PAGE") != null) window.location.hash = '#'+localStorage.getItem("EGEOFFREY_CURRENT_PAGE")
+		var last_page = this.connections.get_page()
+		if (last_page == null) last_page = ""
+        window.location.hash = '#'+last_page
     }    
     
     // generate a random session_id
@@ -269,21 +293,14 @@ class Login {
     
     // load the gui
     load() {
-        // restore user credentials 
-        if (localStorage.getItem("EGEOFFREY_GATEWAY_HOSTNAME") != null) window.EGEOFFREY_GATEWAY_HOSTNAME = localStorage.getItem("EGEOFFREY_GATEWAY_HOSTNAME")
-        if (localStorage.getItem("EGEOFFREY_GATEWAY_PORT") != null) window.EGEOFFREY_GATEWAY_PORT = localStorage.getItem("EGEOFFREY_GATEWAY_PORT")
-        if (localStorage.getItem("EGEOFFREY_GATEWAY_SSL") != null) window.EGEOFFREY_GATEWAY_SSL = parseInt(localStorage.getItem("EGEOFFREY_GATEWAY_SSL"))
-        if (localStorage.getItem("EGEOFFREY_ID") != null) window.EGEOFFREY_ID = localStorage.getItem("EGEOFFREY_ID")
-        if (localStorage.getItem("EGEOFFREY_PASSCODE") != null) window.EGEOFFREY_PASSCODE = localStorage.getItem("EGEOFFREY_PASSCODE")
-        if (localStorage.getItem("EGEOFFREY_USERNAME") != null) window.EGEOFFREY_USERNAME = localStorage.getItem("EGEOFFREY_USERNAME")
-        if (localStorage.getItem("EGEOFFREY_PASSWORD") != null) window.EGEOFFREY_PASSWORD = localStorage.getItem("EGEOFFREY_PASSWORD")
-        if (localStorage.getItem("EGEOFFREY_REMEMBER_ME") != null) window.EGEOFFREY_REMEMBER_ME = parseInt(localStorage.getItem("EGEOFFREY_REMEMBER_ME"))
         // restore language setting
         if (localStorage.getItem("EGEOFFREY_LANGUAGE") != null) {
             set_language(localStorage.getItem("EGEOFFREY_LANGUAGE"))
             this.draw()
         }
-        // create a gui and start it
+        // restore saved connection 
+		this.connections.restore()
+        // create a gui and start it. This will automatically login if there is a valid session loaded
         window.gui = new Gui("gui", "guest_" + this.generate_session_id())
         this.restore_page()
         window.gui.run()

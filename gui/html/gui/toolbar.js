@@ -6,6 +6,9 @@ class Toolbar extends Widget {
         this.persistent = true
         this.max_items = 10
         this.notification_value_enabled = false
+        this.manifests = {}
+        this.manifest_analysis_scheduled = false
+        
         // draw toolbar structure
         $("#toolbar").html('\
             <li class="nav-item dropdown">\
@@ -84,7 +87,7 @@ class Toolbar extends Widget {
         // subscribe for new alert
         this.add_broadcast_listener("+/+", "NOTIFY", "#")
         // ask for manifest files needed for notifying about available updates
-        if (gui.settings.check_for_updates) this.add_broadcast_listener("+/+", "MANIFEST", "#")
+        this.add_broadcast_listener("+/+", "MANIFEST", "#")
     }
 
     // add a new item to a widget
@@ -170,15 +173,39 @@ class Toolbar extends Widget {
         else if (message.command == "MANIFEST") {
             var manifest = message.get_data()
             if (manifest["manifest_schema"] != gui.supported_manifest_schema) return
-            // set gui version
-            if (manifest["package"] == "egeoffrey-gui") $("#version").html(manifest["version"].toFixed(1)+"-"+manifest["revision"]+" ("+manifest["branch"]+")")
-            // check for update
-            var url = "https://raw.githubusercontent.com/"+manifest["github"]+"/"+manifest["branch"]+"/manifest.yml?timestamp="+new Date().getTime()
-            $.get(url, function(data) {
-                var remote_manifest = jsyaml.load(data)
-                if (remote_manifest["manifest_schema"] != gui.supported_manifest_schema) return
-                if (remote_manifest["version"] > manifest["version"] || (remote_manifest["version"] == manifest["version"] && remote_manifest["revision"] > manifest["revision"])) gui.notify("info", "A new version of "+manifest["package"]+" is available")
-            });
+            // if we already got a manifest for the same package, keep track only of the latest one
+            if (manifest["package"] in this.manifests) {
+                var old_manifest = this.manifests[manifest["package"]]
+                if (manifest["version"] > old_manifest["version"] || (manifest["version"] == old_manifest["version"] && manifest["revision"] > old_manifest["revision"])) this.manifests[manifest["package"]] = manifest
+            }
+            else this.manifests[manifest["package"]] = manifest
+            // wait for all the manifests to be collected then check for updates
+            if (! this.manifest_analysis_scheduled) {
+                setTimeout(function(this_class) {
+                    return function() {
+                        for (var package_name in this_class.manifests) {
+                            var manifest = this_class.manifests[package_name]
+                            // set gui version
+                            if (manifest["package"] == "egeoffrey-gui") $("#version").html(manifest["version"].toFixed(1)+"-"+manifest["revision"]+" ("+manifest["branch"]+")")
+                            // check for updates
+                            if (gui.settings.check_for_updates) {
+                                // get the manifest from the github repository
+                                var url = "https://raw.githubusercontent.com/"+manifest["github"]+"/"+manifest["branch"]+"/manifest.yml?timestamp="+new Date().getTime()
+                                $.get(url, function(manifest) {
+                                    return function(data) {
+                                        var remote_manifest = jsyaml.load(data)
+                                        if (remote_manifest["manifest_schema"] != gui.supported_manifest_schema) return
+                                        if (remote_manifest["version"] > manifest["version"] || (remote_manifest["version"] == manifest["version"] && remote_manifest["revision"] > manifest["revision"])) {
+                                            gui.notify("info", "A new version of "+manifest["package"]+" is available")
+                                        }
+                                    }
+                                }(manifest));
+                            }
+                        }
+                    };
+                }(this), 3000);
+                this.manifest_analysis_scheduled = true
+            }
         }
     }
     

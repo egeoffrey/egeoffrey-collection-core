@@ -540,6 +540,9 @@ class Page {
                     <li class="nav-item d-none">\
                         <a class="nav-link" id="'+id+'_tab_slider" data-toggle="pill" href="#'+id+'_tab_slider_content"  role="tab" aria-controls="'+id+'_tab_slider_content" aria-selected="false">Slider</a>\
                     </li>\
+                    <li class="nav-item d-none">\
+                        <a class="nav-link" id="'+id+'_tab_heartbeat" data-toggle="pill" href="#'+id+'_tab_heartbeat_content"  role="tab" aria-controls="'+id+'_tab_heartbeat_content" aria-selected="false">Heartbeat</a>\
+                    </li>\
                     \
                     <li class="nav-item">\
                         <a class="nav-link" id="'+id+'_tab_permissions" data-toggle="pill" href="#'+id+'_tab_permissions_content"  role="tab" aria-controls="'+id+'_tab_permissions_content" aria-selected="false">Permissions</a>\
@@ -559,7 +562,8 @@ class Page {
                                 <option value="2">2</option>\
                                 <option value="3">3</option>\
                                 <option value="4">4</option>\
-                                <option value="5">6</option>\
+								<option value="5">5</option>\
+                                <option value="6">6</option>\
                                 <option value="7">7</option>\
                                 <option value="8">8</option>\
                                 <option value="9">9</option>\
@@ -590,6 +594,7 @@ class Page {
                                 <option value="notifications">Notifications - list the latest notifications</option>\
                                 <option value="chatbot">Chatbot - display the interactive chatbot</option>\
                                 <option value="slider">Slider - display a range slider</option>\
+								<option value="heartbeat">Heartbeat - display an elapsed since last heartbeat</option>\
                             </select>\
                         </div>\
                         <div class="form-group">\
@@ -1003,6 +1008,17 @@ class Page {
                         </div>\
                     </div>\
                     \
+                    <div class="tab-pane fade" id="'+id+'_tab_heartbeat_content" role="tabpanel" aria-labelledby="'+id+'_tab_heartbeat">\
+                        <div class="form-group">\
+                            <label>Sensor*</label>\
+                            <input type="text" id="'+id+'_heartbeat_sensor" class="form-control" placeholder="the sensor whose elapsed has to be displayed" required>\
+                        </div>\
+                        <div class="form-group">\
+                            <label>Widget Style</label>\
+                            <input type="text" id="'+id+'_heartbeat_variant" class="form-control" placeholder="1 (default) for small box, 2 for larger box">\
+                        </div>\
+                    </div>\
+                    \
                     <div class="tab-pane fade" id="'+id+'_tab_permissions_content" role="tabpanel" aria-labelledby="'+id+'_tab_permissions">\
                         <div class="form-group">\
                             <label>Authorized Groups</label>\
@@ -1017,7 +1033,7 @@ class Page {
                 </div>\
             </form>\
         ')
-        $("#wizard_body").append('<br><a id="'+id+'_advanced_editor" class="float-right text-primary">Advanced Editor</a>')
+        $("#wizard_body").append('<br><a id="'+id+'_advanced_editor" class="float-right text-primary d-none">Advanced Editor</a>')
         $("#"+id+"_advanced_editor").unbind().click(function(this_class) {
             return function () {
                 $('#wizard').unbind('hidden.bs.modal')
@@ -1047,6 +1063,7 @@ class Page {
         simple_types["notifications"] = ["show_only"]
         simple_types["map"] = ["map_type", "timeframe"]
         simple_types["slider"] = ["sensor", "icon", "color", "variant", "min_value", "max_value", "step"]
+		simple_types["heartbeat"] = ["sensor", "variant"]
         var array_types = {}
         array_types["summary"] = ["sensors"]
         array_types["timeline"] = ["sensors"]
@@ -1413,6 +1430,7 @@ class Page {
         else if (widget["widget"] == "notifications") widget_object = new Notifications(id, widget)
         else if (widget["widget"] == "chatbot") widget_object = new Chatbot(id, widget)
         else if (widget["widget"] == "slider") widget_object = new Value(id, widget)
+		else if (widget["widget"] == "heartbeat") widget_object = new Value(id, widget)
         // system widgets
         else if (widget["widget"] == "__packages") widget_object = new Packages(id, widget)
         else if (widget["widget"] == "__modules") widget_object = new Modules(id, widget)

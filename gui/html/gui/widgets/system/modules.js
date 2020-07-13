@@ -114,7 +114,7 @@ class Modules extends Widget {
             table.rows().every( function ( row_index, table_loop, row_loop ) {
                 var row = this.data()
                 if (row[8] != message.sender) return
-				var text = latency < 2 ? latency+"s" : '<span class="text-danger">'+latency+"s</span>" 
+				var text = latency < 5 ? latency+"s" : '<span class="text-danger">'+latency+"s</span>" 
                 table.cell(row_index, 6).data(text).draw(false)
             });
         }

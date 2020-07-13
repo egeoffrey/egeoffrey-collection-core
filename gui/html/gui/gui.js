@@ -5,6 +5,7 @@ class Gui extends Module {
     on_init() {
         this.username = "EGEOFFREY_USERNAME" in window ? window.EGEOFFREY_USERNAME : "guest"
         this.password = "EGEOFFREY_PASSWORD" in window ? window.EGEOFFREY_PASSWORD : ""
+		this.remember_page = "EGEOFFREY_REMEMBER_PAGE" in window ? window.EGEOFFREY_REMEMBER_PAGE : 1
         // apply locale
         $("#popup_close").html(locale("gui.popup.close"))
         $("#wizard_close").html(locale("gui.wizard.close"))
@@ -50,6 +51,7 @@ class Gui extends Module {
         this.menu = new Menu("menu")
         this.toolbar = new Toolbar("toolbar")
 		this.first_page_loaded = false
+		this.connections = new Connections()
         // set to true when waiting for a page
         this.waiting_for_page = false
         // loaded Google Maps
@@ -60,6 +62,17 @@ class Gui extends Module {
         this.logged_in = false
         // keep track of all timers
         this.timers = []
+		// remove any listener on the hash change, will be re-added later once the module is started
+		window.onhashchange = null
+        // safeguard, if not receiving a configuration file timely, disconnect
+        setTimeout(function(this_class) {
+            return function() {
+                if (Object.keys(this_class.settings).length === 0) {
+                    this_class.log_error("Timeout in receiving the GUI configuration, disconnecting")
+                    this_class.logout()
+                }
+            };
+        }(this), 3000);
     }
     
 	// notify the user about something
@@ -142,7 +155,7 @@ class Gui extends Module {
             return
         }
         // keep track of the current page
-        localStorage.setItem("EGEOFFREY_CURRENT_PAGE", page_id)
+        if (this.remember_page) this.connections.set_page(page_id)
 		// if loading the page for the first time, draw the menu and toolbar (otherwise unload_page() would reset pending requests)
 		if (! this.first_page_loaded) {
 			this.menu.draw()
@@ -250,15 +263,6 @@ class Gui extends Module {
         // user logged in successfully
         this.logged_in = true
         $("#body").html('<center><i class="fas fa-spin fa-spinner"></i> Loading...</center>')
-        // safeguard, if not receiving a configuration file timely, disconnect
-        setTimeout(function(this_class) {
-            return function() {
-                if (Object.keys(this_class.settings).length === 0) {
-                    this_class.log_error("Timeout in receiving the configuration, disconnecting")
-                    this_class.logout()
-                }
-            };
-        }(this), 3000);
         // periodically send keepalive messages to keep connection open (default timeout is 60 seconds)
         setInterval(function(this_class) {
             return function() {
@@ -351,7 +355,32 @@ class Gui extends Module {
             if (! this.is_valid_configuration(["units", "timezone", "language", "name"], message.get_data())) return false
             this.house = message.get_data()
             // set house name
-            $("#house_name").html(this.house["name"].replaceAll(" ","&nbsp;"))
+			$("#house_name").html(this.house["name"].replaceAll(" ","&nbsp;"))
+			// populate available connection select
+			$("#connections").empty()
+			$("#connections").append(new Option("Go To", "__select__"));
+			var connections = this.connections.get()
+			if (connections != null) {
+				// for each saved connection
+				for (var connection_id in connections["connections"]) {
+					var connection = connections["connections"][connection_id]
+					// add a new option to the select
+					$("#connections").append(new Option(connection["EGEOFFREY_USERNAME"]+"@"+connection["EGEOFFREY_ID"]+" ("+connection["EGEOFFREY_GATEWAY_HOSTNAME"]+":"+connection["EGEOFFREY_GATEWAY_PORT"]+")", connection_id));
+				}
+			}
+			// configure change event for the session select
+			$('#connections').unbind().change(function(this_class) {
+				return function () {
+					var connection_id = $('#connections').val()
+					if (connection_id == "__select__") return
+					// restore the selected session
+					this_class.connections.restore(connection_id)
+					// enable auto logon
+					window.EGEOFFREY_AUTOLOGON = 1
+					// logout from the current session
+					this_class.logout()
+				};
+			}(this))
             // set house time
             this.date = new DateTimeUtils(message.get("timezone"))
             $("#house_time").html(gui.date.format_timestamp())

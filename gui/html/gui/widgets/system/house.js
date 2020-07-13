@@ -113,7 +113,7 @@ class House extends Widget {
                             </div>\
                         </div>\
                         <div class="float-right">\
-                          <button type="button" class="btn btn-default" id="'+this.id+'_groups_new_user">New User</button>\
+                          <button type="button" class="btn btn-default" id="'+this.id+'_groups_new_user">Add User</button>\
                           <button type="button" class="btn btn-default" id="'+this.id+'_groups_new">New Group</button>\
                           <button type="button" class="btn btn-default text-red" id="'+this.id+'_groups_delete">Delete Group</button>\
                           <button type="button" class="btn btn-primary" id="'+this.id+'_groups_save">Save</button>\

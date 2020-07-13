@@ -105,6 +105,7 @@
     <script src="gui/env.js"></script>
     <script src="gui/env_custom.js"></script>
     <script src="gui/language.js"></script>
+	<script src="gui/connection.js"></script>
     <script src="gui/login.js"></script>
     <script src="gui/gui.js"></script>
     <script src="gui/widget.js"></script>
@@ -180,6 +181,14 @@
                 </li>
                 <li class="nav-item d-sm-inline-block">
                     <b><a id="house_name" class=" nav-link brand-text"></a></b>
+                </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a class="nav-link">|</a>
+                </li>
+                <li class="nav-item d-sm-inline-block">
+					<div class="form-group-sm">
+						<select id="connections" class="form-control"></select>
+					</div>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
                     <a class="nav-link">|</a>
@@ -289,8 +298,7 @@
 
     <!-- ### FOOTER  ### -->
     <footer class="main-footer">
-        <strong>Copyright &copy; 2019 <a href="http://www.egeoffrey.com" target="_new">eGeoffrey</a>.
-			</strong> All rights reserved.
+        egeoffrey-gui v<span id="version"></span>
     </footer>
     </div>
 
