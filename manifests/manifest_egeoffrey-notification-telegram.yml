@@ -17,6 +17,6 @@ modules:
       name: chat_id
       required: true
 package: egeoffrey-notification-telegram
-revision: 1
+revision: 2
 tags: notification telegram
 version: 1.0

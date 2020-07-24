@@ -22,6 +22,6 @@ modules:
         placeholder: uptime
         required: true
 package: egeoffrey-service-command
-revision: 15
+revision: 16
 tags: service command os
 version: 1.0

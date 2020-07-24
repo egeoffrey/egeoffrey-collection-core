@@ -23,6 +23,6 @@ modules:
       placeholder: channel_name
       required: true
 package: egeoffrey-interaction-slack
-revision: 10
+revision: 11
 tags: interaction slack
 version: 1.0

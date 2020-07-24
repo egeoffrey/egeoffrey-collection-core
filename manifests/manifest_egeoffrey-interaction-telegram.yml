@@ -19,6 +19,6 @@ modules:
       placeholder: housebot
       required: true
 package: egeoffrey-interaction-telegram
-revision: 1
+revision: 2
 tags: interaction telegram
 version: 1.0

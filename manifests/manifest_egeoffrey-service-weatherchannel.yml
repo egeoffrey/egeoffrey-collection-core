@@ -29,6 +29,6 @@ modules:
         placeholder: 70.11
         required: true
 package: egeoffrey-service-weatherchannel
-revision: 15
+revision: 16
 tags: service weather alert
 version: 1.0
