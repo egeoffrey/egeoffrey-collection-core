@@ -66,6 +66,10 @@
     <link rel="stylesheet" href="lib/datatables/datatables.min.css" />
     <script src="lib/datatables/datatables.min.js"></script>
     <script src="lib/datatables/dataTables.colResize.js"></script>
+    
+    <!-- Bootstrap Select -->
+    <script src="lib/bootstrap-select/bootstrap-select.min.js"></script>
+    <link rel="stylesheet" href="lib/bootstrap-select/bootstrap-select.min.css" />
 
     <!--  dhtmlxscheduler (scheduler calendar) -->
     <script src="lib/dhtmlxscheduler/dhtmlxscheduler.js"></script>
@@ -111,6 +115,7 @@
     <script src="gui/widget.js"></script>
     <script src="gui/menu.js"></script>
     <script src="gui/toolbar.js"></script>
+    <script src="gui/system.js"></script>
     <script src="gui/page.js"></script>
 
     <script src="gui/widgets/user/summary.js"></script>
@@ -132,17 +137,21 @@
     <script src="gui/widgets/system/logs.js"></script>
     <script src="gui/widgets/system/rules.js"></script>
     <script src="gui/widgets/system/configuration.js"></script>
-    <script src="gui/widgets/system/icons.js"></script>
     <script src="gui/widgets/system/packages.js"></script>
     <script src="gui/widgets/system/database.js"></script>
     <script src="gui/widgets/system/gateway.js"></script>
-    <script src="gui/widgets/system/house.js"></script>
+    <script src="gui/widgets/system/setup.js"></script>
+    <script src="gui/widgets/system/users.js"></script>
+    <script src="gui/widgets/system/pages.js"></script>
+    <script src="gui/widgets/system/menu_folders.js"></script>
+    <script src="gui/widgets/system/menu_items.js"></script>
 
     <script src="gui/widgets/wizard/sensor_wizard.js"></script>
     <script src="gui/widgets/wizard/rule_wizard.js"></script>
     <script src="gui/widgets/wizard/module_wizard.js"></script>
     <script src="gui/widgets/wizard/menu_item_wizard.js"></script>
-    <script src="gui/widgets/wizard/menu_section_wizard.js"></script>
+    <script src="gui/widgets/wizard/menu_folder_wizard.js"></script>
+    <script src="gui/widgets/wizard/widget_wizard.js"></script>
 </head>
 
 <style>
@@ -168,9 +177,15 @@
     .direct-chat-messages {
         height: 365px;
     }
+    .card-body {
+        padding: 0.5rem;
+    }
+    .modal {
+        overflow-y:auto;
+    }
 </style>
 
-<body class="hold-transition sidebar-mini layout-fixed layout-navbar-fixed layout-footer-fixed">
+<body id="index_body" class="hold-transition sidebar-mini layout-fixed layout-navbar-fixed">
     <div class="wrapper">
         
         <!-- ### TOP BAR ### -->
@@ -267,8 +282,8 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-default text-red d-none" id="wizard_delete"></button>
-                        <button type="button" class="btn btn-primary" id="wizard_save"></button>
                         <button type="button" class="btn btn-default" data-dismiss="modal" id="wizard_close"></button>
+                        <button type="button" class="btn btn-primary" id="wizard_save"></button>
                     </div>
                 </div>
             </div>
@@ -290,7 +305,35 @@
                 </div>
             </div>
         </div>
-    </div>
+        
+        <!-- ### RECONNECT POPUP  ### -->
+        <div class="modal fade" id="reconnect">
+            <div class="modal-dialog modal-md">
+                <div class="modal-content">
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-lg-12 center-block" id="reconnect_body"></div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" id="reconnect_close"></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ### WAITING POPUP  ### -->
+        <div class="modal fade" id="waiting">
+            <div class="modal-dialog modal-md">
+                <div class="modal-content">
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-lg-12 center-block" id="waiting_body"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
     <!-- ### CONTROL-SIDEBAR  ### -->
     <aside class="control-sidebar control-sidebar-dark">
@@ -298,7 +341,7 @@
 
     <!-- ### FOOTER  ### -->
     <footer class="main-footer">
-        egeoffrey-gui v<span id="version"></span>
+        egeoffrey-gui <span id="version"></span>
     </footer>
     </div>
 

@@ -53,14 +53,14 @@ class Chatbot extends Widget {
     // add a question to the chat box
     add_question(question) {
         var user = gui.users[gui.username]
-        // TODO: current time
+        var icon = user["icon"] != "" ? user["icon"] : "user"
         var question_html = '\
             <div class="direct-chat-msg">\
               <div class="direct-chat-info clearfix">\
                 <span class="direct-chat-name pull-left">'+user["fullname"]+'</span>\
                 <span class="direct-chat-timestamp float-right">'+gui.date.format_timestamp()+'</span>\
               </div>\
-              <i class="direct-chat-img fas fa-2x fa-'+user["icon"]+'"></i>\
+              <i class="direct-chat-img fas fa-2x fa-'+icon+'"></i>\
               <div class="direct-chat-text">\
                 '+question+'\
               </div>\

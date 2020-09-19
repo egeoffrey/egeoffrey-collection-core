@@ -46,6 +46,7 @@ class Webserver(Controller):
             self.log_info("Starting webserver...")
             self.log_debug(sdk.python.utils.command.run("cp -f setup/nginx.conf /etc/nginx/conf.d/default.conf"))
             self.log_debug(sdk.python.utils.command.run("killall nginx >/dev/null 2>&1"))
+            self.log_debug(sdk.python.utils.command.run("chmod 444 /egeoffrey/gui/html/gui/*.js"))
             self.log_debug(sdk.python.utils.command.run("nginx -c /etc/nginx/nginx.conf"))
         
     # What to do when shutting down

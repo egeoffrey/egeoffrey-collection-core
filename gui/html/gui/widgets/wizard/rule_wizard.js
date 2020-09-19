@@ -61,7 +61,7 @@ class Rule_wizard extends Widget {
                     <div class="tab-pane fade show active" id="'+this.id+'_tab_general_content" role="tabpanel" aria-labelledby="'+this.id+'_tab_general">\
                         <div class="form-group">\
                             <label>Rule identifier*</label>\
-                            <input type="text" id="'+this.id+'_rule_id" class="form-control" placeholder="identifier that will be used to reference the rule" required>\
+                            <input type="text" id="'+this.id+'_rule_id" class="form-control" pattern="[a-zA-Z0-9/_-]+" placeholder="identifier that will be used to reference the rule" required>\
                         </div>\
                         <div class="form-check">\
                             <input type="checkbox" class="form-check-input" id="'+this.id+'_disabled">\
@@ -386,6 +386,7 @@ class Rule_wizard extends Widget {
                     if (! ("constants" in rule)) rule["constants"] = {}
                     if (key == null) key = this.value
                     else if (key != null) {
+                        if (this.value == null) this.value = ""
                         rule["constants"][key] = $.isNumeric(this.value) ? parseFloat(this.value) : this.value
                         key = null
                     }
@@ -536,7 +537,7 @@ class Rule_wizard extends Widget {
                     <i class="fas fa-equals fa-1x"></i>\
                 </div>\
                 <div class="col-6">\
-                    <input type="text" id="'+this.id+'_constant_value_'+i+'" class="form-control" placeholder="value of the constant" value="'+value+'" required>\
+                    <input type="text" id="'+this.id+'_constant_value_'+i+'" class="form-control" placeholder="value of the constant" value="'+value+'">\
                 </div>\
                 <div class="col-1">\
                     <button type="button" id="'+this.id+'_text" class="btn btn-default">\

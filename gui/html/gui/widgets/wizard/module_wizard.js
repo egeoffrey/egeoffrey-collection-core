@@ -210,9 +210,9 @@ class Module_wizard extends Widget {
                     }
                     // add disabled checkbox
                     input = '\
-                        <div class="form-group">\
-                            <label>Disable the module</label>\
-                            <input type="checkbox" class="form-control" id="'+this.id+'_module_disabled">\
+                        <div class="form-check">\
+                            <input type="checkbox" class="form-check-input" id="'+this.id+'_module_disabled">\
+                            <label class="form-check-label"><b>Disable the module (restart the module to disable)</b></label>\
                         </div>'
                     $('#'+this.id+'_tab_configuration_content').append(input)
                     // request the module's configuration

@@ -78,7 +78,7 @@ class Configuration extends Widget {
             // add new file button
             var button_html = '\
                 <div class="form-group">\
-                    <button type="button" id="'+this.id+'_new" class="btn btn-block btn-primary btn-lg"><i class="fas fa-plus"></i> Add a new file</button>\
+                    <button type="button" id="'+this.id+'_new" class="btn btn-block btn-outline-primary btn-lg"><i class="fas fa-plus"></i> Add a new file</button>\
                 </div>'
             $(body).append(button_html)
             $("#"+this.id+"_new").unbind().click(function(this_class) {

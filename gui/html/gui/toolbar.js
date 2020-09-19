@@ -5,7 +5,7 @@ class Toolbar extends Widget {
         super(id, {})
         this.persistent = true
         this.max_items = 10
-        this.notification_value_enabled = false
+        this.live_feed = false
         this.manifests = {}
         this.manifest_analysis_scheduled = false
         
@@ -43,7 +43,6 @@ class Toolbar extends Widget {
             </li>\
             <li class="nav-item dropdown">\
                 <a class="nav-link" data-toggle="dropdown" href="#">\
-                    <input type="checkbox" id="notification_value_enabled">\
                     <i class="fas fa-microchip"></i>\
                     <span class="badge badge-info navbar-badge" id="notification_value_count"></span>\
                 </a>\
@@ -72,18 +71,6 @@ class Toolbar extends Widget {
             })
             this.send(message)
         }
-        // setup notification values checkbox
-        if (this.notification_value_enabled) $("#notification_value_enabled").iCheck('check')
-        $("#notification_value_enabled").iCheck({
-          checkboxClass: 'icheckbox_square-blue',
-          radioClass: 'iradio_square-blue',
-          increaseArea: '20%' 
-        });
-        $("#notification_value_enabled").unbind().on('ifChanged',function(this_class) {
-            return function () {
-                this_class.notification_value_enabled = this.checked
-            };
-        }(this));
         // subscribe for new alert
         this.add_broadcast_listener("+/+", "NOTIFY", "#")
         // ask for manifest files needed for notifying about available updates
@@ -103,7 +90,7 @@ class Toolbar extends Widget {
         // realtime alerts
         if (message.recipient == "*/*" && message.command == "NOTIFY") {
             var severity = message.args.split("/")[0]
-            if (severity == "value" && ! $("#notification_value_enabled").prop('checked')) return
+            if (severity == "value" && ! this.live_feed) return
             var alert_text = escape_html(message.get_data())
             var widget = "#notification_"+severity;
             var widget_counter = "#notification_"+severity+"_count"
@@ -186,7 +173,7 @@ class Toolbar extends Widget {
                         for (var package_name in this_class.manifests) {
                             var manifest = this_class.manifests[package_name]
                             // set gui version
-                            if (manifest["package"] == "egeoffrey-gui") $("#version").html(manifest["version"].toFixed(1)+"-"+manifest["revision"]+" ("+manifest["branch"]+")")
+                            if (manifest["package"] == "egeoffrey-gui") $("#version").html("v"+manifest["version"].toFixed(1)+"-"+manifest["revision"]+" ("+manifest["branch"]+")")
                             // check for updates
                             if (gui.settings.check_for_updates) {
                                 // get the manifest from the github repository

@@ -86,6 +86,7 @@ class Packages extends Widget {
                         </button>\
                         <div class="dropdown-menu" role="menu">\
                             <a class="dropdown-item" id="'+this.id+'_manifest_'+manifest_tag+'" style="cursor: pointer"><i class="fas fa-newspaper"></i> View Manifest</a>\
+                            <a class="dropdown-item" id="'+this.id+'_delete_examples_'+manifest_tag+'" style="cursor: pointer"><i class="fas fa-trash"></i> Delete Examples</a>\
                         </div>\
                     </div>\
                 </div>\
@@ -138,6 +139,35 @@ class Packages extends Widget {
                         $('#wizard_save').removeClass("d-none")
                     })
                     $("#wizard").modal()                                        
+                };
+            }(this, manifest));
+            // delete examples
+            $("#"+this.id+'_delete_examples_'+manifest_tag).unbind().click(function(this_class, manifest) {
+                return function () {
+                    gui.confirm("Do you really want to delete all the example sensors/rules/pages/menu installed by the package "+manifest["package"]+"?", function(result){ 
+                        if (! result) return
+                        var count = 0
+                        if ("default_config" in manifest) {
+                            for (var entry of manifest["default_config"]) {
+                                for (var filename in entry) {
+                                    // identify examples file only
+                                    if (filename.startsWith("sensors/examples/") || filename.startsWith("rules/examples/") || filename.startsWith("gui/pages/examples/") || filename.startsWith("gui/menu/examples/")) {
+                                        var config_schema = filename.charAt(filename.length-1)
+                                        filename = filename.substring(0, filename.length-2);
+                                        if (filename.endsWith("/_section")) continue
+                                        var message = new Message(gui)
+                                        message.recipient = "controller/config"
+                                        message.command = "DELETE"
+                                        message.args = filename
+                                        message.config_schema = config_schema
+                                        gui.send(message)
+                                        count++
+                                    }
+                                }
+                            }
+                        }
+                        gui.notify("info", "Requesting the to delete "+count+" example files.If the package is restarted, examples will be re-deployed")
+                    });
                 };
             }(this, manifest));
             if (table.data().count() == 0) $("#"+this.id+"_table_text").html('No data to display')

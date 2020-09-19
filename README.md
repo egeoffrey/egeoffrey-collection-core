@@ -132,8 +132,12 @@ To configure each module included in this package, once started, click on the *'
   - Service configuration:
     - Mode 'push':
       - *topic**: the topic to subscribe (e.g. /sensors/in)
+      - *key*: the key of the JSON payload whose measure has to be extracted (e.g. temperature)
+      - *filter*: filter in only a subset of data based on conditions provided in the format key1=value1&key2=value2 (for JSON input only) (e.g. action=rotate_right)
     - Mode 'actuator':
       - *topic**: the topic to publish to (e.g. /sensors/out)
+      - *key*: send a JSON payload with the value set into the following attribute (e.g. state)
+      - *template*: send a custom payload with the placeholder %value% replaced by the actual value (e.g. {"warning": {"duration": 10, "mode": "%value%", "strobe": true}})
 - **service/openweathermap**: retrieve weather information from OpenWeatherMap
   - Module configuration:
     - *api_key**: your OpenWeatherMap API key
@@ -198,4 +202,4 @@ collection core
 
 ## Version
 
-The version of this egeoffrey-collection-core is 1.1-3 on the master branch.
+The version of this egeoffrey-collection-core is 1.1-4 on the master branch.

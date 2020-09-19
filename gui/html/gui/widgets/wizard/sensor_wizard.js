@@ -47,7 +47,7 @@ class Sensor_wizard extends Widget {
                     <div class="tab-pane fade show active" id="'+this.id+'_tab_general_content" role="tabpanel" aria-labelledby="'+this.id+'_tab_general">\
                         <div class="form-group">\
                             <label>Sensor identifier*</label>\
-                            <input type="text" id="'+this.id+'_sensor_id" class="form-control" placeholder="identifier that will be used to reference the sensor" required>\
+                            <input type="text" id="'+this.id+'_sensor_id" class="form-control" pattern="[a-zA-Z0-9/_-]+" placeholder="identifier that will be used to reference the sensor" required>\
                         </div>\
                         <div class="form-check">\
                             <input type="checkbox" class="form-check-input" id="'+this.id+'_disabled">\
@@ -59,7 +59,7 @@ class Sensor_wizard extends Widget {
                         </div>\
                         <div class="form-group">\
                             <label>Sensor Icon</label>\
-                            <input type="text" id="'+this.id+'_icon" class="form-control" placeholder="e.g. microchip">\
+                            <select id="'+this.id+'_icon" class="form-control"></select>\
                         </div>\
                     </div>\
                     <div class="tab-pane fade" id="'+this.id+'_tab_data_content" role="tabpanel" aria-labelledby="'+this.id+'_tab_data">\
@@ -174,6 +174,7 @@ class Sensor_wizard extends Widget {
                 </div>\
             </form>\
         ')
+        gui.select_icon(this.id+'_icon')
         // add link to advanced configuration
         var link = sensor_id == null ? "__new__" : sensor_id
         $("#wizard_body").append('<br><a id="'+this.id+'_advanced_editor" class="float-right text-primary d-none">Advanced Editor</a>')
@@ -267,7 +268,7 @@ class Sensor_wizard extends Widget {
                                 if (required == "") options_html = options_html+'<option value=""></option>'
                                 // draw a text input
                                 if (["int", "float", "string", "password"].includes(configuration["format"])) {
-                                    var placeholder = "placeholder" in configuration ? "e.g. "+configuration["placeholder"] : ""
+                                    var placeholder = "placeholder" in configuration ? "e.g. "+escape_html(configuration["placeholder"]) : ""
                                     var type = configuration["format"] == "password" ? "password" : "text"
                                     input = '\
                                         <div class="form-group">\
@@ -462,7 +463,10 @@ class Sensor_wizard extends Widget {
             $("#"+this.id+"_sensor_id").prop("disabled", true)
             // populate the rest of the form
             for (var item of ["description", "icon", "format", "unit", "min_value", "max_value", "allowed_values", "calculate", "retain", "post_processor", "pre_processor"]) {
-                if (item in sensor) $("#"+this.id+"_"+item).val(sensor[item])
+                if (item in sensor) {
+                    if ($("#"+this.id+"_"+item).hasClass("bootstrap-select")) $("#"+this.id+"_"+item).selectpicker("val", sensor[item])
+                    else $("#"+this.id+"_"+item).val(sensor[item])
+                }
             }
             // populate disabled checkbox
             if ("disabled" in sensor && sensor["disabled"]) $("#"+this.id+"_disabled").prop("checked", true)

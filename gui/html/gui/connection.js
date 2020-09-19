@@ -33,42 +33,48 @@ class Connections {
 			if (! (connection_id in connections["connections"])) return
 			var connection = connections["connections"][connection_id]
 			// restore connection settings
-			if (connection["EGEOFFREY_GATEWAY_HOSTNAME"] != null) {
-				window.EGEOFFREY_GATEWAY_HOSTNAME = connection["EGEOFFREY_GATEWAY_HOSTNAME"]
-				$("#egeoffrey_gateway_hostname").val(connection["EGEOFFREY_GATEWAY_HOSTNAME"])
-			}
-			if (connection["EGEOFFREY_GATEWAY_PORT"] != null) {
-				window.EGEOFFREY_GATEWAY_PORT = connection["EGEOFFREY_GATEWAY_PORT"]
-				$("#egeoffrey_gateway_port").val(connection["EGEOFFREY_GATEWAY_PORT"])
-			}
-			if (connection["EGEOFFREY_GATEWAY_SSL"] != null) {
-				window.EGEOFFREY_GATEWAY_SSL = parseInt(connection["EGEOFFREY_GATEWAY_SSL"])
-				if (connection["EGEOFFREY_GATEWAY_SSL"]) $("#egeoffrey_gateway_ssl").iCheck('check')
-				else $("#egeoffrey_gateway_ssl").iCheck('uncheck')
-			}
-			if (connection["EGEOFFREY_ID"] != null) {
-				window.EGEOFFREY_ID = connection["EGEOFFREY_ID"]
-				 $("#egeoffrey_id").val(connection["EGEOFFREY_ID"])
-			}
-			if (connection["EGEOFFREY_PASSCODE"] != null) {
-				window.EGEOFFREY_PASSCODE = connection["EGEOFFREY_PASSCODE"]
-				$("#egeoffrey_passcode").val(connection["EGEOFFREY_PASSCODE"])
-			}
-			if (connection["EGEOFFREY_USERNAME"] != null) {
-				window.EGEOFFREY_USERNAME = connection["EGEOFFREY_USERNAME"]
-				$("#egeoffrey_username").val(connection["EGEOFFREY_USERNAME"])
-			}
-			if (connection["EGEOFFREY_PASSWORD"] != null) {
-				window.EGEOFFREY_PASSWORD = connection["EGEOFFREY_PASSWORD"]
-				$("#egeoffrey_password").val(connection["EGEOFFREY_PASSWORD"])
-			}
-			if (connection["EGEOFFREY_REMEMBER_PAGE"] != null) {
-				window.EGEOFFREY_REMEMBER_PAGE = parseInt(connection["EGEOFFREY_REMEMBER_PAGE"])
-				if (connection["EGEOFFREY_REMEMBER_PAGE"]) $("#egeoffrey_remember_page").iCheck('check')
-				else $("#egeoffrey_remember_page").iCheck('uncheck')
-			}			
+            this.load_settings(connection)
+            return connection_id
 		}
 	}
+    
+    // just load into the login form a raw connection data structure
+    load_settings(connection) {
+        if (connection["EGEOFFREY_GATEWAY_HOSTNAME"] != null) {
+            window.EGEOFFREY_GATEWAY_HOSTNAME = connection["EGEOFFREY_GATEWAY_HOSTNAME"]
+            $("#egeoffrey_gateway_hostname").val(connection["EGEOFFREY_GATEWAY_HOSTNAME"])
+        }
+        if (connection["EGEOFFREY_GATEWAY_PORT"] != null) {
+            window.EGEOFFREY_GATEWAY_PORT = connection["EGEOFFREY_GATEWAY_PORT"]
+            $("#egeoffrey_gateway_port").val(connection["EGEOFFREY_GATEWAY_PORT"])
+        }
+        if (connection["EGEOFFREY_GATEWAY_SSL"] != null) {
+            window.EGEOFFREY_GATEWAY_SSL = parseInt(connection["EGEOFFREY_GATEWAY_SSL"])
+            if (connection["EGEOFFREY_GATEWAY_SSL"]) $("#egeoffrey_gateway_ssl").iCheck('check')
+            else $("#egeoffrey_gateway_ssl").iCheck('uncheck')
+        }
+        if (connection["EGEOFFREY_ID"] != null) {
+            window.EGEOFFREY_ID = connection["EGEOFFREY_ID"]
+            $("#egeoffrey_id").val(connection["EGEOFFREY_ID"])
+        }
+        if (connection["EGEOFFREY_PASSCODE"] != null) {
+            window.EGEOFFREY_PASSCODE = connection["EGEOFFREY_PASSCODE"]
+            $("#egeoffrey_passcode").val(connection["EGEOFFREY_PASSCODE"])
+        }
+        if (connection["EGEOFFREY_USERNAME"] != null) {
+            window.EGEOFFREY_USERNAME = connection["EGEOFFREY_USERNAME"]
+            $("#egeoffrey_username").val(connection["EGEOFFREY_USERNAME"])
+        }
+        if (connection["EGEOFFREY_PASSWORD"] != null) {
+            window.EGEOFFREY_PASSWORD = connection["EGEOFFREY_PASSWORD"]
+            $("#egeoffrey_password").val(connection["EGEOFFREY_PASSWORD"])
+        }
+        if (connection["EGEOFFREY_REMEMBER_PAGE"] != null) {
+            window.EGEOFFREY_REMEMBER_PAGE = parseInt(connection["EGEOFFREY_REMEMBER_PAGE"])
+            if (connection["EGEOFFREY_REMEMBER_PAGE"]) $("#egeoffrey_remember_page").iCheck('check')
+            else $("#egeoffrey_remember_page").iCheck('uncheck')
+        }
+    }
 
 	// save currently configured connections in the browser local storage
 	save(reset_last_connection=false) {

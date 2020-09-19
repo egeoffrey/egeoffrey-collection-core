@@ -82,9 +82,10 @@ class Widget {
     
     // add a large box
     add_large_box(id, title) {
+        var header_hidden =  title.trim() == "" ? "d-none" : ""
         var template = '\
             <div class="card card-primary" id="'+id+'_card">\
-                <div class="card-header with-border">\
+                <div class="card-header with-border '+header_hidden+'">\
                     <h3 class="card-title" id="'+id+'_title">'+title+'</h3>\
                     <div class="card-tools float-right" id="'+id+'_widget_buttons">\
                         <button id="'+id+'_edit" type="button" class="btn btn-tool edit_page_item d-none"><i class="fas fa-edit"></i></button>\
@@ -150,7 +151,7 @@ class Widget {
             <div class="icon">\
                 <i class="fas fa-'+icon+'" id="'+id+'_icon"></i>\
             </div>\
-            <a class="small-box-footer" id="'+id+'_link"> Show More <i class="fa fa-arrow-circle-right"></i></a>\
+            <a class="small-box-footer" id="'+id+'_link"> Show <i class="fa fa-arrow-circle-down"></i></a>\
         </section>'
         $("#"+id).empty()
         $("#"+id).html(template)
@@ -183,7 +184,7 @@ class Widget {
                         </span>\
                         <input type="text" name="message" placeholder="Type Message ..." class="form-control" id="'+id+'_text">\
                         <span class="input-group-btn">\
-                            <button type="button" class="btn btn-primary btn-flat" id="'+id+'_button">Send</button>\
+                            <button type="button" class="btn btn-primary btn-flat" id="'+id+'_button">Ask</button>\
                         </span>\
                     </div>\
                 </form>\

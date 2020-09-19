@@ -1,5 +1,5 @@
-// house widget
-class House extends Widget {
+// Users widget
+class Users extends Widget {
     constructor(id, widget) {
         super(id, widget)
         // add an empty box into the given column
@@ -14,74 +14,16 @@ class House extends Widget {
         $(body).html("")
         $(body).append('\
             <ul class="nav nav-tabs" id="'+this.id+'_tabs" role="tablist">\
-                <li class="nav-item">\
-                    <a class="nav-link active" id="'+this.id+'_tab_house" data-toggle="pill" href="#'+this.id+'_tab_house_content" role="tab" aria-controls="'+this.id+'_tab_house_content" aria-selected="true"><i class="fas fa-home"></i> House</a>\
                 </li>\
                 <li class="nav-item">\
-                    <a class="nav-link" id="'+this.id+'_tab_gui" data-toggle="pill" href="#'+this.id+'_tab_gui_content"  role="tab" aria-controls="'+this.id+'_tab_gui_content" aria-selected="false"><i class="fas fa-columns"></i> Web Interface</a>\
-                </li>\
-                <li class="nav-item">\
-                    <a class="nav-link" id="'+this.id+'_tab_users" data-toggle="pill" href="#'+this.id+'_tab_users_content"  role="tab" aria-controls="'+this.id+'_tab_users_content" aria-selected="false"><i class="fas fa-user"></i> Users</a>\
+                    <a class="nav-link active" id="'+this.id+'_tab_users" data-toggle="pill" href="#'+this.id+'_tab_users_content"  role="tab" aria-controls="'+this.id+'_tab_users_content" aria-selected="false"><i class="fas fa-user"></i> Users</a>\
                 </li>\
                 <li class="nav-item">\
                     <a class="nav-link" id="'+this.id+'_tab_groups" data-toggle="pill" href="#'+this.id+'_tab_groups_content"  role="tab" aria-controls="'+this.id+'_tab_groups_content" aria-selected="false"><i class="fas fa-users"></i> Groups</a>\
                 </li>\
             </ul>\
             <div class="tab-content text-left">\
-                <div class="tab-pane fade show active" id="'+this.id+'_tab_house_content" role="tabpanel" aria-labelledby="'+this.id+'_tab_house">\
-                    <form method="POST" role="form" id="'+this.id+'_form_house" class="needs-validation" novalidate>\
-                        <div class="form-group">\
-                            <label>Name of your House - used in notifications and as web interface title*</label>\
-                            <input type="text" id="'+this.id+'_house_name" class="form-control" placeholder="House Name" required>\
-                        </div>\
-                        <div class="form-group">\
-                            <label>Timezone Offset - used by the scheduler to run your rules or poll your sensors at the right time*</label>\
-                            <input type="text" id="'+this.id+'_house_timezone" class="form-control" placeholder="1" required>\
-                        </div>\
-                        <div class="form-group">\
-                            <label>Language* - used for localizing the information coming from your services</label>\
-                            <input type="text" id="'+this.id+'_house_language" class="form-control" placeholder="en" required>\
-                        </div>\
-                        <div class="form-group">\
-                            <label>Units* - used for providing you the measures in the right format</label>\
-                            <select id="'+this.id+'_house_units" class="form-control" required>\
-                                <option value="metric">Metric (e.g. °C, km, etc.)</option>\
-                                <option value="imperial">Imperial (e.g. °F, miles, etc.)</option>\
-                            </select>\
-                        </div>\
-                        <div class="form-group">\
-                            <label>Latitude* - used by e.g. weather and earthquake services (<a target="_blank" href="https://gps-coordinates.org/">find out my position</a>)</label>\
-                            <input type="text" id="'+this.id+'_house_latitude" class="form-control" placeholder="48.85" required>\
-                        </div>\
-                        <div class="form-group">\
-                            <label>Longitude* - used by e.g. weather and earthquake services (<a target="_blank" href="https://gps-coordinates.org/">find out my position</a>)</label>\
-                            <input type="text" id="'+this.id+'_house_longitude" class="form-control" placeholder="2.35" required>\
-                        </div>\
-                        <div class="float-right">\
-                          <button type="button" class="btn btn-primary" id="'+this.id+'_house_save">Save</button>\
-                        </div>\
-                    </form>\
-                </div>\
-                <div class="tab-pane fade" id="'+this.id+'_tab_gui_content" role="tabpanel" aria-labelledby="'+this.id+'_tab_gui">\
-                    <form method="POST" role="form" id="'+this.id+'_form_gui" class="needs-validation" novalidate>\
-                        <div class="form-group">\
-                            <label>Default Page*</label>\
-                            <input type="text" id="'+this.id+'_gui_default_page" class="form-control" placeholder="overview/welcome" required>\
-                        </div>\
-                        <div class="form-group">\
-                            <label>Map API Key - used by the Map widget to draw interactive maps (<a target="_blank" href="http://developers.google.com/maps/documentation/embed/get-api-key">get it from here</a>)</label>\
-                            <input type="text" id="'+this.id+'_gui_map_api_key" class="form-control">\
-                        </div>\
-                        <div class="form-group">\
-                            <label>Check for Updates at Login</label>\
-                            <input type="checkbox" id="'+this.id+'_gui_check_for_updates" class="form-control">\
-                        </div>\
-                        <div class="float-right">\
-                          <button type="button" class="btn btn-primary" id="'+this.id+'_gui_save">Save</button>\
-                        </div>\
-                    </form>\
-                </div>\
-                <div class="tab-pane fade" id="'+this.id+'_tab_users_content" role="tabpanel" aria-labelledby="'+this.id+'_tab_users">\
+                <div class="tab-pane fade show active" id="'+this.id+'_tab_users_content" role="tabpanel" aria-labelledby="'+this.id+'_tab_users">\
                     <form method="POST" role="form" id="'+this.id+'_form_users" class="needs-validation" novalidate>\
                         <div class="row">\
                             <div class="col-3">\
@@ -124,79 +66,6 @@ class House extends Widget {
         ')
         var id = this.id
         var this_class = this
-        
-        // configure house form
-        $('#'+this.id+'_form_house').on('submit', function (e) {
-            // form is validated
-            if ($('#'+this_class.id+'_form_house')[0].checkValidity()) {
-                // build up the configuration file
-                var configuration = {}
-                $("#"+this_class.id+"_form_house :input").each(function(e){
-                    var item = this.id.replace(this_class.id+"_house_", "")
-                    var value = this.value
-                    if (value != null && value != "") configuration[item] = $.isNumeric(value) ? parseFloat(value) : value
-                });
-                // save configuration
-                var message = new Message(gui)
-                message.recipient = "controller/config"
-                message.command = "SAVE"
-                message.args = "house"
-                message.config_schema = gui.supported_house_config_schema
-                message.set_data(configuration)
-                gui.send(message)
-                // close the modal
-                gui.notify("success","House configuration saved successfully")
-                return false
-            }
-            else {
-                e.preventDefault();
-                e.stopPropagation();
-            }
-            $('#'+this_class.id+'_form_house').addClass("was-validated")
-        })
-        $('#'+this.id+'_house_save').unbind().click(function(this_class) {
-            return function () {
-                $("#"+this_class.id+"_form_house").submit()
-            };
-        }(this))
-        
-        // configure gui form
-        $('#'+this.id+'_form_gui').on('submit', function (e) {
-            // form is validated
-            if ($('#'+this_class.id+'_form_gui')[0].checkValidity()) {
-                // build up the configuration file
-                var configuration = {}
-                $("#"+this_class.id+"_form_gui :input").each(function(e){
-                    var item = this.id.replace(this_class.id+"_gui_", "")
-                    if (this.value != null && this.value != "") {
-                        if (this.type == "checkbox") configuration[item] = this.checked
-                        else if ($.isNumeric(this.value)) configuration[item] = parseFloat(this.value)
-                        else configuration[item] = this.value
-                    }
-                });
-                // save configuration
-                var message = new Message(gui)
-                message.recipient = "controller/config"
-                message.command = "SAVE"
-                message.args = "gui/settings"
-                message.config_schema = gui.settings_config_schema
-                message.set_data(configuration)
-                gui.send(message)
-                // close the modal
-                gui.notify("success","Web Interface configuration saved successfully")
-                return false
-            }
-            else {
-                e.preventDefault();
-                e.stopPropagation();
-            }
-            $('#'+this_class.id+'_form_gui').addClass("was-validated")
-        })
-        $('#'+this.id+'_gui_save').unbind().click(function(this_class) {
-            return function () {
-                $("#"+this_class.id+"_form_gui").submit()
-            };
-        }(this))
         
         // configure users form
         var id = this.id
@@ -355,8 +224,6 @@ class House extends Widget {
         }(this))
         
         // request data
-        this.add_configuration_listener("house", gui.supported_house_config_schema)
-        this.add_configuration_listener("gui/settings", gui.settings_config_schema)
         this.add_configuration_listener("gui/users", gui.users_config_schema)
         this.add_configuration_listener("gui/groups", gui.groups_config_schema)
     }
@@ -387,8 +254,8 @@ class House extends Widget {
                     <input type="text" id="'+this.id+'_user_'+username+'_fullname" class="form-control" placeholder="Name Surname" value="'+user["fullname"]+'" required>\
                 </div>\
                 <div class="form-group">\
-                    <label>Icon*</label>\
-                    <input type="text" id="'+this.id+'_user_'+username+'_icon" class="form-control" placeholder="user" value="'+user["icon"]+'" required>\
+                    <label>Icon</label>\
+                    <select id="'+this.id+'_user_'+username+'_icon" class="form-control"></select>\
                 </div>\
                 <div class="form-group">\
                     <label>Password</label>\
@@ -397,6 +264,8 @@ class House extends Widget {
             </div>\
         '
         $("#"+this.id+"_users_tab_content").append(tab_content)
+        gui.select_icon(this.id+'_user_'+username+'_icon')
+        $("#"+this.id+'_user_'+username+'_icon').selectpicker("val", user["icon"])
     }
     
     // add a new group
@@ -444,25 +313,8 @@ class House extends Widget {
     
     // receive configuration
     on_configuration(message) {
-        // receiving house configuration
-        if (message.args == "house") {
-            var data = message.get_data()
-            // populate the form
-            for (var configuration of ["name", "timezone", "language", "units", "latitude", "longitude"]) {
-                $("#"+this.id+"_house_"+configuration).val(data[configuration])
-            }
-        }
-        // receiving gui configuration
-        else if (message.args == "gui/settings") {
-            var data = message.get_data()
-            // populate the form
-            for (var configuration of ["default_page", "map_api_key"]) {
-                $("#"+this.id+"_gui_"+configuration).val(data[configuration])
-            }
-            $("#"+this.id+"_gui_check_for_updates").prop("checked", data["check_for_updates"])
-        }
         // receiving users configuration
-        else if (message.args == "gui/users") {
+        if (message.args == "gui/users") {
             var data = message.get_data()
             // populate the form
             var first = true
