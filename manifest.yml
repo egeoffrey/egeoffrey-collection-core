@@ -81,6 +81,12 @@ modules:
       name: retention
       placeholder: 6
       required: true
+    - description: Prevent the same rule to run again within this timeframe in seconds
+        to avoid loops
+      format: int
+      name: loop_safeguard
+      placeholder: 3
+      required: true
 - controller/chatbot:
     description: Interactive chatbot service
     module_configuration:
@@ -473,6 +479,6 @@ modules:
         placeholder: 70.11
         required: true
 package: egeoffrey-collection-core
-revision: 4
+revision: 5
 tags: collection core
 version: 1.1

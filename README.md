@@ -40,6 +40,7 @@ To configure each module included in this package, once started, click on the *'
 - **controller/alerter**: keep running the configured rules which would trigger notifications
   - Module configuration:
     - *retention**: number of days to keep old logs in the database (e.g. 6)
+    - *loop_safeguard**: prevent the same rule to run again within this timeframe in seconds to avoid loops (e.g. 3)
 - **controller/chatbot**: interactive chatbot service
   - Module configuration:
     - *vocabulary**: chatbot's basic vocabulary
@@ -202,4 +203,4 @@ collection core
 
 ## Version
 
-The version of this egeoffrey-collection-core is 1.1-4 on the master branch.
+The version of this egeoffrey-collection-core is 1.1-5 on the master branch.
