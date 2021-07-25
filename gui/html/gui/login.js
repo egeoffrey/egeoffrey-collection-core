@@ -29,7 +29,7 @@ class Login {
 		if (connections != null) {
 			for (var connection_id in connections["connections"]) {
 				var connection = connections["connections"][connection_id]
-				$("#saved_connections").append(new Option(connection["EGEOFFREY_ID"]+"/"+connection["EGEOFFREY_USERNAME"]+" ("+connection["EGEOFFREY_GATEWAY_HOSTNAME"]+":"+connection["EGEOFFREY_GATEWAY_PORT"]+")", connection_id));
+				$("#saved_connections").append(new Option(connection["connection_name"], connection_id));
 			}
 		}
 	}
@@ -55,7 +55,10 @@ class Login {
         this.login_in_progress = in_progress
         $("#login_button").prop("disabled", in_progress)
         if (in_progress) $("#login_button").html(locale("login.connecting"))
-        else $("#login_button").html(locale("login.login_button"))
+        else {
+            $("#login_button").html(locale("login.login_button"))
+            this.waiting_configuration_running = false
+        }
     }
     
     // log a message in console
@@ -85,6 +88,7 @@ class Login {
                     this_class.set_login_status("warning", "Unable to find the house configuration")
                     this_class.log("warning", "Unable to find the house configuration")
                     window.gui.join()
+                    this_class.set_login_in_progress(false)
                 }
             };
         }(this), 500);
@@ -110,7 +114,6 @@ class Login {
                     this_class.log("warning", "Unable to reach the backend")
                     window.gui.join()
                 }
-                this_class.waiting_configuration_running = false
                 this_class.set_login_in_progress(false)
             };
         }(this), 500);
@@ -151,6 +154,13 @@ class Login {
                         </div>\
                         <div class="form-group has-feedback">\
                             <input type="input" class="form-control" placeholder="'+locale("login.gateway.port")+'" id="egeoffrey_gateway_port">\
+                        </div>\
+                        <div class="form-group has-feedback">\
+                            <select class="form-control" id="egeoffrey_gateway_version">\
+                                <option value="">Gateway protocol version</option>\
+                                <option value="1">v1</option>\
+                                <option value="2">v2</option>\
+                            </select>\
                         </div>\
                         <div class="form-group has-feedback">\
                             <div class="checkbox icheck">\
@@ -286,6 +296,7 @@ class Login {
 				// pull out the user's data from the form and set the variables the Gui class needs to access
                 window.EGEOFFREY_GATEWAY_HOSTNAME = $("#egeoffrey_gateway_hostname").val()
                 window.EGEOFFREY_GATEWAY_PORT = $("#egeoffrey_gateway_port").val()
+                window.EGEOFFREY_GATEWAY_VERSION = $("#egeoffrey_gateway_version").val()
                 window.EGEOFFREY_GATEWAY_SSL = $("#egeoffrey_gateway_ssl").is(":checked") ? 1 : 0
                 window.EGEOFFREY_ID = $("#egeoffrey_id").val()
                 window.EGEOFFREY_PASSCODE = $("#egeoffrey_passcode").val()
@@ -296,7 +307,7 @@ class Login {
                 window.EGEOFFREY_LOGGING_REMOTE = $("#egeoffrey_logging_remote").is(":checked") ? 1 : 0
 				window.EGEOFFREY_REMEMBER_PAGE = $("#egeoffrey_remember_page").is(":checked") ? 1 : 0
                 // just return if no gateway is provided
-                if (window.EGEOFFREY_GATEWAY_HOSTNAME == "") return
+                if (window.EGEOFFREY_GATEWAY_HOSTNAME == "" || window.EGEOFFREY_GATEWAY_PORT == "" || window.EGEOFFREY_GATEWAY_VERSION == "") return
                 this_class.set_login_status("info", '<i class="fas fa-spin fa-spinner"></i> Connecting to the eGeoffrey gateway...')
                 this_class.log("debug", "Connecting to the eGeoffrey gateway...")
 				// save user's connections
@@ -462,6 +473,7 @@ class Login {
             var connection = {
                 "EGEOFFREY_GATEWAY_HOSTNAME": window.EGEOFFREY_GATEWAY_HOSTNAME,
                 "EGEOFFREY_GATEWAY_PORT": window.EGEOFFREY_GATEWAY_PORT,
+                "EGEOFFREY_GATEWAY_VERSION": window.EGEOFFREY_GATEWAY_VERSION,
                 "EGEOFFREY_GATEWAY_SSL": window.EGEOFFREY_GATEWAY_SSL,
                 "EGEOFFREY_ID": window.EGEOFFREY_ID,
                 "EGEOFFREY_PASSCODE": window.EGEOFFREY_PASSCODE,

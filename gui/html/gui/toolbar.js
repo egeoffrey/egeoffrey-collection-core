@@ -74,7 +74,7 @@ class Toolbar extends Widget {
         // subscribe for new alert
         this.add_broadcast_listener("+/+", "NOTIFY", "#")
         // ask for manifest files needed for notifying about available updates
-        this.add_broadcast_listener("+/+", "MANIFEST", "#")
+        this.listener = this.add_manifest_listener()
     }
 
     // add a new item to a widget

@@ -1,4 +1,4 @@
-branch: master
+branch: development
 container_config:
   environment:
   - EGEOFFREY_LOGGING_LOCAL=0
@@ -116,7 +116,13 @@ modules:
       format: int
       name: duplicates_tolerance
       required: false
+    - description: if pinning (retaining) the last value of each sensor on the message
+        bus
+      format: checkbox
+      name: pin_last_values
+      required: false
 package: egeoffrey-controller
-revision: 2
+revision: 7
+sdk_branch: development
 tags: controller
 version: 1.3

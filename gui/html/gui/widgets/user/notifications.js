@@ -108,7 +108,7 @@ class Notifications extends Widget {
             this.send(message)
         }
         // subscribe for new alert
-        this.listener = this.add_broadcast_listener("*/*", "NOTIFY", "#")
+        this.listener = this.add_broadcast_listener("+/+", "NOTIFY", "#")
     }
     
     // format the severity

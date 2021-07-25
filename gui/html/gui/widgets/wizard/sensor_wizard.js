@@ -383,7 +383,7 @@ class Sensor_wizard extends Widget {
         // ask for controller/hub configuration
         this.add_configuration_listener("controller/hub", 3)
         // request manifests for all the services
-        this.add_broadcast_listener("+/+", "MANIFEST", "#")
+        this.listener = this.add_manifest_listener()
         // extract requested sensor from URL
         if (sensor_id != null) {
             setTimeout(function(this_class, sensor_id) {

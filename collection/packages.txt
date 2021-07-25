@@ -1,5 +1,5 @@
-egeoffrey/egeoffrey-controller:master
-egeoffrey/egeoffrey-gui:master
+egeoffrey/egeoffrey-controller:development
+egeoffrey/egeoffrey-gui:development
 egeoffrey/egeoffrey-interaction-slack:master
 egeoffrey/egeoffrey-interaction-telegram:master
 egeoffrey/egeoffrey-notification-betamax_sms:master

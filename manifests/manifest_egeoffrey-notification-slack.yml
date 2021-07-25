@@ -23,6 +23,6 @@ modules:
       placeholder: channel_name
       required: true
 package: egeoffrey-notification-slack
-revision: 11
+revision: 12
 tags: notification slack
 version: 1.0

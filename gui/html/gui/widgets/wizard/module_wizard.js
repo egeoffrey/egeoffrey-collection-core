@@ -150,7 +150,7 @@ class Module_wizard extends Widget {
         // discovery response from the watchdog managing the requested module
         if (message.command == "DISCOVER") {
             // now we need the manifest published by this watchdog to retrieve the module's configuration schema
-            this.add_broadcast_listener(message.sender, "MANIFEST", "#")
+            this.listener = this.add_manifest_listener(message.sender)
             this.waiting_manifest = true
         }
         // receive manifest from watchdog

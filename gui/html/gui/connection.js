@@ -16,6 +16,13 @@ class Connections {
 		connections = JSON.parse(connections)
 		// ensure the config schema is supported
 		if (connections["config_schema"] != this.config_schema) return
+		if (connections != null) {
+			for (var connection_id in connections["connections"]) {
+				var connection = connections["connections"][connection_id]
+				if (connection["EGEOFFREY_GATEWAY_VERSION"] == null) connection["EGEOFFREY_GATEWAY_VERSION"] = 1
+				connections["connections"][connection_id]["connection_name"] = connection["EGEOFFREY_USERNAME"]+"@"+connection["EGEOFFREY_ID"]+" ("+connection["EGEOFFREY_GATEWAY_HOSTNAME"]+":"+connection["EGEOFFREY_GATEWAY_PORT"]+" v"+connection["EGEOFFREY_GATEWAY_VERSION"]+")"
+			}
+		}
 		return connections
 	}
 
@@ -47,6 +54,10 @@ class Connections {
         if (connection["EGEOFFREY_GATEWAY_PORT"] != null) {
             window.EGEOFFREY_GATEWAY_PORT = connection["EGEOFFREY_GATEWAY_PORT"]
             $("#egeoffrey_gateway_port").val(connection["EGEOFFREY_GATEWAY_PORT"])
+        }
+        if (connection["EGEOFFREY_GATEWAY_VERSION"] != null) {
+            window.EGEOFFREY_GATEWAY_VERSION = connection["EGEOFFREY_GATEWAY_VERSION"]
+            $("#egeoffrey_gateway_version").val(connection["EGEOFFREY_GATEWAY_VERSION"])
         }
         if (connection["EGEOFFREY_GATEWAY_SSL"] != null) {
             window.EGEOFFREY_GATEWAY_SSL = parseInt(connection["EGEOFFREY_GATEWAY_SSL"])
@@ -93,12 +104,13 @@ class Connections {
 		}
 		// remember this connection
 		else {
-			var connection_id = window.EGEOFFREY_GATEWAY_HOSTNAME+"_"+window.EGEOFFREY_GATEWAY_PORT+"_"+window.EGEOFFREY_ID+"_"+window.EGEOFFREY_USERNAME
+			var connection_id = window.EGEOFFREY_GATEWAY_HOSTNAME+"_"+window.EGEOFFREY_GATEWAY_PORT+"_"+"_"+window.EGEOFFREY_GATEWAY_VERSION+window.EGEOFFREY_ID+"_"+window.EGEOFFREY_USERNAME
 			// save current connection information
 			if (window.EGEOFFREY_REMEMBER_ME == 1) {
 				var connection = {
 					"EGEOFFREY_GATEWAY_HOSTNAME": window.EGEOFFREY_GATEWAY_HOSTNAME,
 					"EGEOFFREY_GATEWAY_PORT": window.EGEOFFREY_GATEWAY_PORT,
+					"EGEOFFREY_GATEWAY_VERSION": window.EGEOFFREY_GATEWAY_VERSION,
 					"EGEOFFREY_GATEWAY_SSL": window.EGEOFFREY_GATEWAY_SSL,
 					"EGEOFFREY_ID": window.EGEOFFREY_ID,
 					"EGEOFFREY_PASSCODE": window.EGEOFFREY_PASSCODE,

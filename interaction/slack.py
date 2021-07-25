@@ -51,7 +51,7 @@ class Slack(Interaction):
         
     # return the ID corresponding to the channel name
     def get_channel_id(self, channelname):
-        channels = self.slack.api_call("channels.list")
+        channels = self.slack.api_call("conversations.list")
         if not channels.get('ok'): return None
         channels = channels.get('channels')
         for channel in channels:

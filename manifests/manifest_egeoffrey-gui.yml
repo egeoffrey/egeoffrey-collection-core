@@ -1,4 +1,4 @@
-branch: master
+branch: development
 container_config:
   ports:
   - 80:80
@@ -11,6 +11,7 @@ modules:
 - gui/webserver:
     description: Runs the webserver serving eGeoffrey's web interface
 package: egeoffrey-gui
-revision: 14
+revision: 18
+sdk_branch: development
 tags: gui
 version: 1.3
