@@ -50,6 +50,7 @@ To configure each module included in this package, once started, click on the *'
     - *retain**: retention policies that can be associated to sensors to e.g. automatically purge old values from the database
     - *post_processors**: set of available post processing commands that can be associated to sensors to e.g. automatically post-process a new value once collected
     - *duplicates_tolerance*: if requested to save the same sensor's value of the latest in a very short time, ignore it (tolerance in seconds)
+    - *pin_last_values*: if pinning (retaining) the last value of each sensor on the message bus
 - **gui/webserver**: runs the webserver serving eGeoffrey's web interface
 - **interaction/slack**: connect to a slack channel as a bot and interact with the user
   - Module configuration:
@@ -91,6 +92,10 @@ To configure each module included in this package, once started, click on the *'
   - Module configuration:
     - *bot_token**: the token of the Telegram bot you have created (https://core.telegram.org/bots#3-how-do-i-create-a-bot)
     - *chat_id**: the chat_id you want to send the message to (https://t.me/gettingidbot)
+- **notification/chromecast**: play a notification through a Chromecast device
+  - Module configuration:
+    - *device_ip**: the hostname/IP address of the Chromecast device (e.g. 192.168.0.53)
+    - *local_ip**: the IP address where this module runs (the device will connect back here to play the audio) (e.g. 192.168.0.254)
 - **service/command**: run system commands
   - Service configuration:
     - Mode 'actuator':
@@ -181,7 +186,7 @@ To function properly, when running in a Docker container, the following addition
 environment:
 - EGEOFFREY_LOGGING_LOCAL=0
 ports:
-- 80:80
+- 8081:8081
 volumes:
 - ./data/egeoffrey/logs:/egeoffrey/logs
 - ./data/egeoffrey/config:/egeoffrey/config
@@ -203,4 +208,4 @@ collection core
 
 ## Version
 
-The version of this egeoffrey-collection-core is 1.1-5 on the master branch.
+The version of this egeoffrey-collection-core is 1.2-2 on the master branch.

@@ -1,5 +1,6 @@
 ### EGEOFFREY ###
 # docker build -f Dockerfile-standalone . -t egeoffrey/egeoffrey-gui_standalone:master-amd64
+# docker push egeoffrey/egeoffrey-gui_standalone:master-amd64
 
 ### define base image
 FROM egeoffrey/egeoffrey-gui:master-amd64

@@ -74,7 +74,7 @@ class Toolbar extends Widget {
         // subscribe for new alert
         this.add_broadcast_listener("+/+", "NOTIFY", "#")
         // ask for manifest files needed for notifying about available updates
-        this.add_broadcast_listener("+/+", "MANIFEST", "#")
+        this.listener = this.add_manifest_listener()
     }
 
     // add a new item to a widget
@@ -173,7 +173,7 @@ class Toolbar extends Widget {
                         for (var package_name in this_class.manifests) {
                             var manifest = this_class.manifests[package_name]
                             // set gui version
-                            if (manifest["package"] == "egeoffrey-gui") $("#version").html("v"+manifest["version"].toFixed(1)+"-"+manifest["revision"]+" ("+manifest["branch"]+")")
+                            if (manifest["package"] == "egeoffrey-gui") $("#version").html("/ egeoffrey-gui v"+manifest["version"].toFixed(1)+"-"+manifest["revision"]+" ("+manifest["branch"]+")")
                             // check for updates
                             if (gui.settings.check_for_updates) {
                                 // get the manifest from the github repository

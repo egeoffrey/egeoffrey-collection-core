@@ -7,8 +7,286 @@ class Sensors extends Widget {
         this.sensors = {}
         this.listener = null
         this.hub = null
+        this.table_redraw_timer = null
+        this.queue = []
         // add an empty box into the given column
         this.add_large_box(this.id, this.widget["title"])
+    }
+
+    // schedule a periodic table redraw to avoid redrawing the table too many times
+    add_row(message) {
+        var sensor_id = message.args.replace("sensors/","")
+        var sensor = message.get_data()
+        // prevent to display the same sensor twice
+        if (sensor_id in this.sensors) return
+        this.sensors[sensor_id] = sensor
+        // push the message to the queue
+        this.queue.push(message)
+        // if there is no timer set, set it
+        if (this.table_redraw_timer == null) {
+            // table will be redrawn only at fixed intervals: 1) for each object add a row 2) redraw the table 3) for each object bind events
+            this.table_redraw_timer = setTimeout(function(this_class) {
+                return function() {
+                    // clone the queue and empty it
+                    var queue = jQuery.extend(true, [], this_class.queue)
+                    this_class.queue = []
+                    var table = $("#"+this_class.id+"_table").DataTable()
+                    // for each object of the queue, add it to the table
+                    for (var i = 0; i < queue.length; i++) {
+                        // get the queued message
+                        var message = queue[i]
+                        var sensor_id = message.args.replace("sensors/","")
+                        var sensor = message.get_data()
+                        var sensor_tag = sensor_id.replaceAll("/","_")
+                        // add a line to the table
+                        var disabled = "disabled" in sensor && sensor["disabled"]
+                        var icon = "icon" in sensor ? sensor["icon"] : 'microchip'
+                        var description = "description" in sensor ? sensor["description"] : ""
+                        var description_html = '\
+                            <div>\
+                                '+this_class.disabled_item('<i class="fas fa-'+icon+'"></i> '+description, disabled)+'<br>\
+                                <i>'+this_class.disabled_item("["+sensor_id+"]", disabled)+'</i>\
+                            </div>\
+                            <div class="form-group" id="'+this_class.id+'_actions_'+sensor_tag+'">\
+                                <div class="btn-group">\
+                                    <button type="button" class="btn btn-sm btn-info">Actions</button>\
+                                    <button type="button" class="btn btn-sm btn-info dropdown-toggle" data-toggle="dropdown">\
+                                        <span class="caret"></span>\
+                                        <span class="sr-only">Toggle Dropdown</span>\
+                                    </button>\
+                                    <div class="dropdown-menu" role="menu">\
+                                        <a class="dropdown-item" id="'+this_class.id+'_poll_'+sensor_tag+'" style="cursor: pointer"><i class="fas fa-play"></i> Poll Service</a>\
+                                        <div class="dropdown-divider" id="'+this_class.id+'_poll_divider_'+sensor_tag+'"></div>\
+                                        <a class="dropdown-item" id="'+this_class.id+'_request_data_'+sensor_tag+'" style="cursor: pointer"><i class="fas fa-sync"></i> Refresh</a>\
+                                        <a class="dropdown-item" id="'+this_class.id+'_graph_'+sensor_tag+'" style="cursor: pointer"><i class="fas fa-chart-bar"></i> History</a>\
+                                        <a class="dropdown-item" id="'+this_class.id+'_set_'+sensor_tag+'" style="cursor: pointer"><i class="fas fa-sign-out-alt"></i> Set Value</a>\
+                                        <div class="dropdown-divider"></div>\
+                                        <a class="dropdown-item" id="'+this_class.id+'_edit_'+sensor_tag+'" style="cursor: pointer"><i class="fas fa-edit"></i> Edit</a>\
+                                        <a class="dropdown-item" id="'+this_class.id+'_retain_'+sensor_tag+'" style="cursor: pointer"><i class="fas fa-calendar-alt"></i> Purge</a>\
+                                        <div class="dropdown-divider"></div>\
+                                        <a class="dropdown-item" id="'+this_class.id+'_empty_'+sensor_tag+'" style="cursor: pointer"><i class="fas fa-database"></i> Reset</a>\
+                                        <a class="dropdown-item" id="'+this_class.id+'_clone_'+sensor_tag+'" style="cursor: pointer"><i class="fas fa-copy"></i> Clone</a>\
+                                        <a class="dropdown-item" id="'+this_class.id+'_rename_'+sensor_tag+'" style="cursor: pointer"><i class="fas fa-font"></i> Rename</a>\
+                                        <a class="dropdown-item" id="'+this_class.id+'_delete_'+sensor_tag+'" style="cursor: pointer"><i class="fas fa-trash"></i> Delete</a>\
+                                    </div>\
+                                </div>\
+                            </div>\
+                        '
+                        var unit = "unit" in sensor ? sensor["unit"] : ""
+                        var service = ""
+                        if ("service" in sensor) {
+                            var service_name = "<u>"+sensor["service"]["name"]+"</u>"
+                            var service_mode = '<span class="d-none">'+"mode: "+sensor["service"]["mode"]+"</span>"
+                            var service_configuration = "configuration:<br>&nbsp;&nbsp;"+this_class.format_object(sensor["service"]["configuration"]).replaceAll("<br>", "<br>&nbsp;&nbsp;")
+                            var service_icon = ""
+                            service = "<u>"+sensor["service"]["name"]+"</u><br>mode: "+sensor["service"]["mode"]+"<br>configuration:<br>&nbsp;&nbsp;"+this_class.format_object(sensor["service"]["configuration"]).replaceAll("<br>", "<br>&nbsp;&nbsp;")
+                            if (sensor["service"]["mode"] == "actuator") service_icon = "cogs"
+                            else if (sensor["service"]["mode"] == "push") service_icon = "satellite-dish"
+                            else if (sensor["service"]["mode"] == "pull") service_icon = "play"
+                            var service_schedule = ""
+                            if ("schedule" in sensor["service"]) {
+                                service_schedule = "schedule:<br>&nbsp;&nbsp;"+this_class.format_object(sensor["service"]["schedule"]).replaceAll("<br>", "<br>&nbsp;&nbsp;")
+                            }
+                            service = '<i class="fas fa-'+service_icon+'"></i>&nbsp;&nbsp;'+service_name+service_mode+"<br>"+service_configuration+"<br>"+service_schedule
+                        }
+                        // add the row
+                        var row_data = [
+                            sensor_id, 
+                            description_html,
+                            sensor["format"], 
+                            unit, 
+                            this_class.disabled_item(service, disabled), 
+                            "", 
+                            "", 
+                            disabled
+                        ]
+                        var row = table.row.add(row_data)
+                        if (table.data().count() == 0) $("#"+this_class.id+"_table_text").html('No data to display')
+                        // enable graph and set button
+                        if (sensor["format"] != "float_1" && sensor["format"] != "float_2" && sensor["format"] != "string" && sensor["format"] != "int") {
+                            $("#"+this_class.id+"_graph_"+sensor_tag).addClass("d-none");
+                            $("#"+this_class.id+"_set_"+sensor_tag).addClass("d-none");
+                            $("#"+this_class.id+"_set_text_"+sensor_tag).addClass("d-none");
+                        }
+                    }
+                    
+                    // redraw the table (showing up the newly added rows)
+                    table.draw(false)
+                    table.responsive.recalc()
+                    
+                    // re-iterate the objects of the queue to configure click actions now that are shown
+                    for (var i = 0; i < queue.length; i++) {
+                        // get the queued message
+                        var message = queue[i]
+                        var sensor_id = message.args.replace("sensors/","")
+                        var sensor = message.get_data()
+                        var sensor_tag = sensor_id.replaceAll("/","_")
+                        // poll the service associated to the sensor
+                        $("#"+this_class.id+"_poll_"+sensor_tag).unbind().click(function(sensor_id) {
+                            return function () {
+                                var message = new Message(gui)
+                                message.recipient = "controller/hub"
+                                message.command = "POLL"
+                                message.args = sensor_id
+                                gui.send(message)
+                                gui.notify("info", "Requesting to poll the service associated to "+sensor_id)
+                            };
+                        }(sensor_id));
+                        // request the latest value for the sensor so to populate the table
+                        $("#"+this_class.id+"_request_data_"+sensor_tag).unbind().click(function(this_class, sensor_id) {
+                            return function () {
+                                this_class.request_data(sensor_id)
+                            };
+                        }(this_class, sensor_id));
+                        // manually set the value to a sensor
+                        $("#"+this_class.id+"_set_"+sensor_tag).unbind().click(function(id, sensor_id) {
+                            return function () {
+                                // ask for the value
+                                bootbox.prompt("Type in the value you want to assign to this sensor", function(result){ 
+                                    if (result == null) return
+                                    var sensor_tag = sensor_id.replaceAll("/","_")
+                                    var value = result
+                                    var message = new Message(gui)
+                                    message.recipient = "controller/hub"
+                                    message.command = "SET"
+                                    message.args = sensor_id
+                                    message.set("value", value)
+                                    gui.send(message)
+                                    gui.notify("info", "Requesting to set "+sensor_id+" to value "+value)
+                                });
+                            };
+                        }(this_class.id, sensor_id));
+                        // show graphs for the selected sensor
+                        $("#"+this_class.id+"_graph_"+sensor_tag).unbind().click(function(sensor_id) {
+                            return function () {
+                                window.location.hash = '#__sensor='+sensor_id;
+                            };
+                        }(sensor_id));
+                        // edit the selected sensor
+                        $("#"+this_class.id+"_edit_"+sensor_tag).unbind().click(function(sensor_id) {
+                            return function () {
+                                window.location.hash = '#__sensor_wizard='+sensor_id;
+                            };
+                        }(sensor_id));
+                        // empty the database entries for this sensor
+                        $("#"+this_class.id+"_empty_"+sensor_tag).unbind().click(function(sensor_id) {
+                            return function () {
+                                gui.confirm("Do you really want to delete all database entries of sensor "+sensor_id+"?", function(result){ 
+                                    if (! result) return
+                                    var message = new Message(gui)
+                                    message.recipient = "controller/db"
+                                    message.command = "DELETE_SENSOR"
+                                    message.args = sensor_id
+                                    gui.send(message)
+                                    gui.notify("info", "Requesting the database to delete all the entries associated to sensor "+sensor_id)
+                                });
+                            };
+                        }(sensor_id));
+                        // manually apply retention policies
+                        $("#"+this_class.id+"_retain_"+sensor_tag).unbind().click(function(this_class, sensor_id) {
+                            return function () {
+                                gui.confirm("Do you want to manually apply configured retention policies for sensor "+sensor_id+"?", function(result){ 
+                                    if (! result) return
+                                    sensor = this_class.sensors[sensor_id]
+                                    if (this_class.hub != null && "retain" in sensor && sensor["retain"] in this_class.hub["retain"]) {
+                                        var message = new Message(gui)
+                                        message.recipient = "controller/db"
+                                        message.command = "PURGE_SENSOR"
+                                        message.args = sensor_id
+                                        message.set_data(this_class.hub["retain"][sensor["retain"]]["policies"])
+                                        gui.send(message)
+                                        gui.notify("info", "Requesting the database to apply configured retention policies associated to sensor "+sensor_id)
+                                    }
+                                });
+                            };
+                        }(this_class, sensor_id));
+                        // delete the sensor and empty the database 
+                        $("#"+this_class.id+"_delete_"+sensor_tag).unbind().click(function(sensor_id, config_schema) {
+                            return function () {
+                                gui.confirm("Do you really want to delete sensor "+sensor_id+" and all its associated data?", function(result){ 
+                                    if (! result) return
+                                    // delete the sensor from the database
+                                    var message = new Message(gui)
+                                    message.recipient = "controller/db"
+                                    message.command = "DELETE_SENSOR"
+                                    message.args = sensor_id
+                                    gui.send(message)
+                                    // delete the sensor configuration file
+                                    var message = new Message(gui)
+                                    message.recipient = "controller/config"
+                                    message.command = "DELETE"
+                                    message.args = "sensors/"+sensor_id
+                                    message.config_schema = config_schema
+                                    gui.send(message)
+                                    gui.notify("info", "Requesting to delete the sensor "+sensor_id)
+                                });
+                            };
+                        }(sensor_id, message.config_schema));
+                        // clone the sensor
+                        $("#"+this_class.id+"_clone_"+sensor_tag).unbind().click(function(this_class, sensor_id, config_schema) {
+                            return function () {
+                                bootbox.prompt("Give the sensor you want to clone a new identifier", function(result){ 
+                                    if (! result) return
+                                    // save the configuration file into the new position
+                                    var message = new Message(gui)
+                                    message.recipient = "controller/config"
+                                    message.command = "SAVE"
+                                    message.args = "sensors/"+result
+                                    message.config_schema = config_schema
+                                    message.set_data(this_class.sensors[sensor_id])
+                                    message.set("disabled", true)
+                                    gui.send(message)
+                                    gui.notify("info","Cloning sensor "+sensor_id+" into "+result)
+                                });
+                            };
+                        }(this_class, sensor_id, message.config_schema));
+                        // rename the sensor
+                        $("#"+this_class.id+"_rename_"+sensor_tag).unbind().click(function(this_class, sensor_id, config_schema) {
+                            return function () {
+                                bootbox.prompt("Give the sensor "+sensor_id+" a new name", function(result){ 
+                                    if (! result) return
+                                    // rename the sensor in the database
+                                    var message = new Message(gui)
+                                    message.recipient = "controller/db"
+                                    message.command = "RENAME_SENSOR"
+                                    message.args = sensor_id
+                                    message.set_data(result)
+                                    gui.send(message)
+                                    // delete the configuration file
+                                    var message = new Message(gui)
+                                    message.recipient = "controller/config"
+                                    message.command = "DELETE"
+                                    message.args = "sensors/"+sensor_id
+                                    message.config_schema = config_schema
+                                    gui.send(message)
+                                    // save the configuration file into the new position
+                                    var message = new Message(gui)
+                                    message.recipient = "controller/config"
+                                    message.command = "SAVE"
+                                    message.args = "sensors/"+result
+                                    message.config_schema = config_schema
+                                    message.set_data(this_class.sensors[sensor_id])
+                                    gui.send(message)
+                                    gui.notify("info","Renaming sensor "+sensor_id+" into "+result)
+                                });
+                            };
+                        }(this_class, sensor_id, message.config_schema));
+                        // disable buttons 
+                        if (disabled) {
+                            $("#"+this_class.id+"_poll_"+sensor_tag).remove()
+                            $("#"+this_class.id+"_set_"+sensor_tag).remove()
+                            $("#"+this_class.id+"_set_text_"+sensor_tag).remove()
+                        }
+                        if ( (! ("service" in sensor)) || ("service" in sensor && sensor["service"]["mode"] != "pull")) {
+                            $("#"+this_class.id+"_poll_"+sensor_tag).remove()
+                            $("#"+this_class.id+"_poll_divider_"+sensor_tag).remove()
+                        }
+                    }
+                    // clear the timer
+                    this_class.table_redraw_timer = null
+                };
+            }(this), 1000);
+        }
     }
     
     // request the data to the database
@@ -42,8 +320,9 @@ class Sensors extends Widget {
         // if refresh requested, we need to unsubscribe from the topics to receive them again
         if (this.listener != null) {
             this.remove_listener(this.listener)
-            this.sensors = {}
         }
+        this.sensors = {}
+        this.queue = []
         var body = "#"+this.id+"_body"
         $(body).html("")
         // add new sensor button
@@ -202,244 +481,7 @@ class Sensors extends Widget {
             this.hub = message.get_data()
         }
         else if (message.args.startsWith("sensors/")) {
-            var sensor_id = message.args.replace("sensors/","")
-            // skip sensors already received
-            // TODO: handle / in sensor_id for html
-            if (sensor_id in this.sensors) return
-            var sensor = message.get_data()
-            this.sensors[sensor_id] = sensor
-            var sensor_tag = sensor_id.replaceAll("/","_")
-            // add a line to the table
-            var table = $("#"+this.id+"_table").DataTable()
-            var disabled = "disabled" in sensor && sensor["disabled"]
-            var icon = "icon" in sensor ? sensor["icon"] : 'microchip'
-            var description = "description" in sensor ? sensor["description"] : ""
-            var description_html = '\
-                <div>\
-                    '+this.disabled_item('<i class="fas fa-'+icon+'"></i> '+description, disabled)+'<br>\
-                    <i>'+this.disabled_item("["+sensor_id+"]", disabled)+'</i>\
-                </div>\
-                <div class="form-group" id="'+this.id+'_actions_'+sensor_tag+'">\
-                    <div class="btn-group">\
-                        <button type="button" class="btn btn-sm btn-info">Actions</button>\
-                        <button type="button" class="btn btn-sm btn-info dropdown-toggle" data-toggle="dropdown">\
-                            <span class="caret"></span>\
-                            <span class="sr-only">Toggle Dropdown</span>\
-                        </button>\
-                        <div class="dropdown-menu" role="menu">\
-                            <a class="dropdown-item" id="'+this.id+'_poll_'+sensor_tag+'" style="cursor: pointer"><i class="fas fa-play"></i> Poll Service</a>\
-                            <div class="dropdown-divider" id="'+this.id+'_poll_divider_'+sensor_tag+'"></div>\
-                            <a class="dropdown-item" id="'+this.id+'_request_data_'+sensor_tag+'" style="cursor: pointer"><i class="fas fa-sync"></i> Refresh</a>\
-                            <a class="dropdown-item" id="'+this.id+'_graph_'+sensor_tag+'" style="cursor: pointer"><i class="fas fa-chart-bar"></i> History</a>\
-                            <a class="dropdown-item" id="'+this.id+'_set_'+sensor_tag+'" style="cursor: pointer"><i class="fas fa-sign-out-alt"></i> Set Value</a>\
-                            <div class="dropdown-divider"></div>\
-                            <a class="dropdown-item" id="'+this.id+'_edit_'+sensor_tag+'" style="cursor: pointer"><i class="fas fa-edit"></i> Edit</a>\
-                            <a class="dropdown-item" id="'+this.id+'_retain_'+sensor_tag+'" style="cursor: pointer"><i class="fas fa-calendar-alt"></i> Purge</a>\
-                            <div class="dropdown-divider"></div>\
-                            <a class="dropdown-item" id="'+this.id+'_empty_'+sensor_tag+'" style="cursor: pointer"><i class="fas fa-database"></i> Reset</a>\
-                            <a class="dropdown-item" id="'+this.id+'_clone_'+sensor_tag+'" style="cursor: pointer"><i class="fas fa-copy"></i> Clone</a>\
-                            <a class="dropdown-item" id="'+this.id+'_rename_'+sensor_tag+'" style="cursor: pointer"><i class="fas fa-font"></i> Rename</a>\
-                            <a class="dropdown-item" id="'+this.id+'_delete_'+sensor_tag+'" style="cursor: pointer"><i class="fas fa-trash"></i> Delete</a>\
-                        </div>\
-                    </div>\
-                </div>\
-            '
-            var unit = "unit" in sensor ? sensor["unit"] : ""
-            var service = ""
-            if ("service" in sensor) {
-                var service_name = "<u>"+sensor["service"]["name"]+"</u>"
-                var service_mode = '<span class="d-none">'+"mode: "+sensor["service"]["mode"]+"</span>"
-                var service_configuration = "configuration:<br>&nbsp;&nbsp;"+this.format_object(sensor["service"]["configuration"]).replaceAll("<br>", "<br>&nbsp;&nbsp;")
-                var service_icon = ""
-                service = "<u>"+sensor["service"]["name"]+"</u><br>mode: "+sensor["service"]["mode"]+"<br>configuration:<br>&nbsp;&nbsp;"+this.format_object(sensor["service"]["configuration"]).replaceAll("<br>", "<br>&nbsp;&nbsp;")
-                if (sensor["service"]["mode"] == "actuator") service_icon = "cogs"
-                else if (sensor["service"]["mode"] == "push") service_icon = "satellite-dish"
-                else if (sensor["service"]["mode"] == "pull") service_icon = "play"
-                var service_schedule = ""
-                if ("schedule" in sensor["service"]) {
-                    service_schedule = "schedule:<br>&nbsp;&nbsp;"+this.format_object(sensor["service"]["schedule"]).replaceAll("<br>", "<br>&nbsp;&nbsp;")
-                }
-                service = '<i class="fas fa-'+service_icon+'"></i>&nbsp;&nbsp;'+service_name+service_mode+"<br>"+service_configuration+"<br>"+service_schedule
-            }
-            // add the row
-            var row_data = [
-                sensor_id, 
-                description_html,
-                sensor["format"], 
-                unit, 
-                this.disabled_item(service, disabled), 
-                "", 
-                "", 
-                disabled
-            ]
-            var row = table.row.add(row_data).draw(false);
-            table.responsive.recalc()
-            if (table.data().count() == 0) $("#"+this.id+"_table_text").html('No data to display')
-            // enable graph and set button
-            if (sensor["format"] != "float_1" && sensor["format"] != "float_2" && sensor["format"] != "string" && sensor["format"] != "int") {
-                $("#"+this.id+"_graph_"+sensor_tag).addClass("d-none");
-                $("#"+this.id+"_set_"+sensor_tag).addClass("d-none");
-                $("#"+this.id+"_set_text_"+sensor_tag).addClass("d-none");
-            }
-            // poll the service associated to the sensor
-            $("#"+this.id+"_poll_"+sensor_tag).unbind().click(function(sensor_id) {
-                return function () {
-                    var message = new Message(gui)
-                    message.recipient = "controller/hub"
-                    message.command = "POLL"
-                    message.args = sensor_id
-                    gui.send(message)
-                    gui.notify("info", "Requesting to poll the service associated to "+sensor_id)
-                };
-            }(sensor_id));
-            // request the latest value for the sensor so to populate the table
-            $("#"+this.id+"_request_data_"+sensor_tag).unbind().click(function(this_class, sensor_id) {
-                return function () {
-                    this_class.request_data(sensor_id)
-                };
-            }(this, sensor_id));
-            // manually set the value to a sensor
-            $("#"+this.id+"_set_"+sensor_tag).unbind().click(function(id, sensor_id) {
-                return function () {
-                    // ask for the value
-                    bootbox.prompt("Type in the value you want to assign to this sensor", function(result){ 
-                        if (result == null) return
-                        var sensor_tag = sensor_id.replaceAll("/","_")
-                        var value = result
-                        var message = new Message(gui)
-                        message.recipient = "controller/hub"
-                        message.command = "SET"
-                        message.args = sensor_id
-                        message.set("value", value)
-                        gui.send(message)
-                        gui.notify("info", "Requesting to set "+sensor_id+" to value "+value)
-                    });
-                };
-            }(this.id, sensor_id));
-            // show graphs for the selected sensor
-            $("#"+this.id+"_graph_"+sensor_tag).unbind().click(function(sensor_id) {
-                return function () {
-                    window.location.hash = '#__sensor='+sensor_id;
-                };
-            }(sensor_id));
-            // edit the selected sensor
-            $("#"+this.id+"_edit_"+sensor_tag).unbind().click(function(sensor_id) {
-                return function () {
-                    window.location.hash = '#__sensor_wizard='+sensor_id;
-                };
-            }(sensor_id));
-            // empty the database entries for this sensor
-            $("#"+this.id+"_empty_"+sensor_tag).unbind().click(function(sensor_id) {
-                return function () {
-                    gui.confirm("Do you really want to delete all database entries of sensor "+sensor_id+"?", function(result){ 
-                        if (! result) return
-                        var message = new Message(gui)
-                        message.recipient = "controller/db"
-                        message.command = "DELETE_SENSOR"
-                        message.args = sensor_id
-                        gui.send(message)
-                        gui.notify("info", "Requesting the database to delete all the entries associated to sensor "+sensor_id)
-                    });
-                };
-            }(sensor_id));
-            // manually apply retention policies
-            $("#"+this.id+"_retain_"+sensor_tag).unbind().click(function(this_class, sensor_id) {
-                return function () {
-                    gui.confirm("Do you want to manually apply configured retention policies for sensor "+sensor_id+"?", function(result){ 
-                        if (! result) return
-                        sensor = this_class.sensors[sensor_id]
-                        if (this_class.hub != null && "retain" in sensor && sensor["retain"] in this_class.hub["retain"]) {
-                            var message = new Message(gui)
-                            message.recipient = "controller/db"
-                            message.command = "PURGE_SENSOR"
-                            message.args = sensor_id
-                            message.set_data(this_class.hub["retain"][sensor["retain"]]["policies"])
-                            gui.send(message)
-                            gui.notify("info", "Requesting the database to apply configured retention policies associated to sensor "+sensor_id)
-                        }
-                    });
-                };
-            }(this, sensor_id));
-            // delete the sensor and empty the database 
-            $("#"+this.id+"_delete_"+sensor_tag).unbind().click(function(sensor_id, config_schema) {
-                return function () {
-                    gui.confirm("Do you really want to delete sensor "+sensor_id+" and all its associated data?", function(result){ 
-                        if (! result) return
-                        // delete the sensor from the database
-                        var message = new Message(gui)
-                        message.recipient = "controller/db"
-                        message.command = "DELETE_SENSOR"
-                        message.args = sensor_id
-                        gui.send(message)
-                        // delete the sensor configuration file
-                        var message = new Message(gui)
-                        message.recipient = "controller/config"
-                        message.command = "DELETE"
-                        message.args = "sensors/"+sensor_id
-                        message.config_schema = config_schema
-                        gui.send(message)
-                        gui.notify("info", "Requesting to delete the sensor "+sensor_id)
-                    });
-                };
-            }(sensor_id, message.config_schema));
-            // clone the sensor
-            $("#"+this.id+"_clone_"+sensor_tag).unbind().click(function(this_class, sensor_id, config_schema) {
-                return function () {
-                    bootbox.prompt("Give the sensor you want to clone a new identifier", function(result){ 
-                        if (! result) return
-                        // save the configuration file into the new position
-                        var message = new Message(gui)
-                        message.recipient = "controller/config"
-                        message.command = "SAVE"
-                        message.args = "sensors/"+result
-                        message.config_schema = config_schema
-                        message.set_data(this_class.sensors[sensor_id])
-                        gui.send(message)
-                        gui.notify("info","Cloning sensor "+sensor_id+" into "+result)
-                    });
-                };
-            }(this, sensor_id, message.config_schema));
-            // rename the sensor
-            $("#"+this.id+"_rename_"+sensor_tag).unbind().click(function(this_class, sensor_id, config_schema) {
-                return function () {
-                    bootbox.prompt("Give the sensor "+sensor_id+" a new name", function(result){ 
-                        if (! result) return
-                        // rename the sensor in the database
-                        var message = new Message(gui)
-                        message.recipient = "controller/db"
-                        message.command = "RENAME_SENSOR"
-                        message.args = sensor_id
-                        message.set_data(result)
-                        gui.send(message)
-                        // delete the configuration file
-                        var message = new Message(gui)
-                        message.recipient = "controller/config"
-                        message.command = "DELETE"
-                        message.args = "sensors/"+sensor_id
-                        message.config_schema = config_schema
-                        gui.send(message)
-                        // save the configuration file into the new position
-                        var message = new Message(gui)
-                        message.recipient = "controller/config"
-                        message.command = "SAVE"
-                        message.args = "sensors/"+result
-                        message.config_schema = config_schema
-                        message.set_data(this_class.sensors[sensor_id])
-                        gui.send(message)
-                        gui.notify("info","Renaming sensor "+sensor_id+" into "+result)
-                    });
-                };
-            }(this, sensor_id, message.config_schema));
-            // disable buttons 
-            if (disabled) {
-                $("#"+this.id+"_poll_"+sensor_tag).remove()
-                $("#"+this.id+"_set_"+sensor_tag).remove()
-                $("#"+this.id+"_set_text_"+sensor_tag).remove()
-            }
-            if ( (! ("service" in sensor)) || ("service" in sensor && sensor["service"]["mode"] != "pull")) {
-                $("#"+this.id+"_poll_"+sensor_tag).remove()
-                $("#"+this.id+"_poll_divider_"+sensor_tag).remove()
-            }
+            this.add_row(message)
         }
     }
 }

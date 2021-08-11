@@ -38,6 +38,6 @@ modules:
       placeholder: 112341231232
       required: true
 package: egeoffrey-notification-betamax_sms
-revision: 12
+revision: 1
 tags: notification sms voip
-version: 1.0
+version: 1.1

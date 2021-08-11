@@ -3,7 +3,7 @@ container_config:
   environment:
   - EGEOFFREY_LOGGING_LOCAL=0
   ports:
-  - 80:80
+  - 8081:8081
   volumes:
   - ./data/egeoffrey/logs:/egeoffrey/logs
   - ./data/egeoffrey/config:/egeoffrey/config
@@ -116,6 +116,11 @@ modules:
         very short time, ignore it (tolerance in seconds)
       format: int
       name: duplicates_tolerance
+      required: false
+    - description: if pinning (retaining) the last value of each sensor on the message
+        bus
+      format: checkbox
+      name: pin_last_values
       required: false
 - gui/webserver:
     description: Runs the webserver serving eGeoffrey's web interface
@@ -264,6 +269,20 @@ modules:
     - description: The chat_id you want to send the message to (https://t.me/gettingidbot)
       format: string
       name: chat_id
+      required: true
+- notification/chromecast:
+    description: Play a notification through a Chromecast device
+    module_configuration:
+    - description: The hostname/IP address of the Chromecast device
+      format: string
+      name: device_ip
+      placeholder: 192.168.0.53
+      required: true
+    - description: The IP address where this module runs (the device will connect
+        back here to play the audio)
+      format: string
+      name: local_ip
+      placeholder: 192.168.0.254
       required: true
 - service/command:
     description: Run system commands
@@ -479,6 +498,6 @@ modules:
         placeholder: 70.11
         required: true
 package: egeoffrey-collection-core
-revision: 5
+revision: 2
 tags: collection core
-version: 1.1
+version: 1.2

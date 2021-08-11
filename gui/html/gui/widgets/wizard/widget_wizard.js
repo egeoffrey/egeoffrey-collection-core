@@ -30,6 +30,7 @@ class Widget_wizard extends Widget {
             "counter": ["color"], 
             "slider": ["color"], 
         }
+        this.refresh_timers = {}
         $("#waiting_body").html('<i class="fas fa-spin fa-spinner"></i> Loading...')
         $("#waiting").modal()
     }
@@ -1007,10 +1008,19 @@ class Widget_wizard extends Widget {
             // for each select expecting a sensor, add the option
             for (var widget_type in this.sensor_tags) {
                 for (var sensor_tag of this.sensor_tags[widget_type]) {
-                    $('#'+this.id+"_"+widget_type+"_"+sensor_tag).append('<option data-icon="fas fa-'+icon+'" value="'+sensor_id+'">'+description+'</option>')
-                    $('#'+this.id+"_"+widget_type+"_"+sensor_tag).selectpicker("refresh")
-                    if (this.widget != null && this.widget["widget"] == widget_type && sensor_tag in this.widget) {
-                        $('#'+this.id+"_"+widget_type+"_"+sensor_tag).selectpicker("val", this.widget[sensor_tag])
+                    var tag = this.id+"_"+widget_type+"_"+sensor_tag
+                    $('#'+tag).append('<option data-icon="fas fa-'+icon+'" value="'+sensor_id+'">'+description+'</option>')
+                    var value = null
+                    if (this.widget != null && this.widget["widget"] == widget_type && sensor_tag in this.widget) value = this.widget[sensor_tag]
+                    // lazy loading to avoid too many refresh of the select
+                    if (! (tag in this.refresh_timers)) {
+                        this.refresh_timers[tag] = setTimeout(function(this_class, tag, value) {
+                            return function() {
+                                $('#'+tag).selectpicker("refresh")
+                                if (value != null) $('#'+tag).selectpicker("val", value)
+                                this_class.refresh_timers[tag] = null
+                            }
+                        }(this, tag, value), 1000);
                     }
                 }
             }

@@ -114,10 +114,10 @@ class Openweathermap(Service):
                     if "deg" not in entry["wind"]: return
                     degrees = entry["wind"]["deg"]
                     direction = "question"
-                    if direction >= 315 or direction <= 45: direction = "arrow-down"
-                    elif direction > 45 and direction <= 135: direction = "arrow-left"
-                    elif direction > 135 and direction <= 225: direction = "arrow-up"
-                    elif direction > 225 and direction <= 315: direction = "arrow-right"
+                    if degrees >= 315 or degrees <= 45: direction = "arrow-down"
+                    elif degrees > 45 and degrees <= 135: direction = "arrow-left"
+                    elif degrees > 135 and degrees <= 225: direction = "arrow-up"
+                    elif degrees > 225 and degrees <= 315: direction = "arrow-right"
                     self.set_measure(message, direction, entry["dt"])
                 elif request == "pressure":
                     self.set_measure(message, entry["main"]["pressure"], entry["dt"])

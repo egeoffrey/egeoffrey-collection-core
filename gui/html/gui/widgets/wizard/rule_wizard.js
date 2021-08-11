@@ -74,11 +74,11 @@ class Rule_wizard extends Widget {
                         <div class="form-group">\
                             <label>Severity*</label>\
                             <select id="'+this.id+'_severity" class="form-control" required>\
-                                <option value="alert">Alert</option>\
-                                <option value="warning">Warning</option>\
-                                <option value="info">Info</option>\
-                                <option value="debug">Debug</option>\
-                                <option value="none">None</option>\
+                                <option value="alert">ALERT</option>\
+                                <option value="warning">WARNING</option>\
+                                <option value="info">INFO</option>\
+                                <option value="debug">DEBUG - Do Not Notify</option>\
+                                <option value="none">DEBUG - Log Only</option>\
                             </select>\
                         </div>\
                         <div class="form-group">\
@@ -88,6 +88,10 @@ class Rule_wizard extends Widget {
                                 <option value="on_demand">On-Demand - runs manually or when requested by the chatbot</option>\
                                 <option value="realtime">Realtime - runs whenever one of the sensors listed in the Triggers tab is updated</option>\
                             </select>\
+                        </div>\
+                        <div class="form-group">\
+                            <label>Rule Icon</label>\
+                            <select id="'+this.id+'_icon" class="form-control"></select>\
                         </div>\
                     </div>\
                     <div class="tab-pane fade" id="'+this.id+'_tab_macro_content" role="tabpanel" aria-labelledby="'+this.id+'_tab_macro">\
@@ -261,6 +265,7 @@ class Rule_wizard extends Widget {
                 </div>\
             </form>\
         ')
+        gui.select_icon(this.id+'_icon')
         // add link to advanced configuration
         var link = rule_id == null ? "__new__" : rule_id
         $("#wizard_body").append('<br><a id="'+this.id+'_advanced_editor" class="float-right text-primary d-none">Advanced Editor</a>')
@@ -349,7 +354,7 @@ class Rule_wizard extends Widget {
                 var rule_id = $("#"+this_class.id+"_rule_id").val()
                 // build up the configuration file
                 var rule = {}
-                for (var item of ["text", "severity", "type"]) {
+                for (var item of ["text", "severity", "type", "icon"]) {
                     var value = $("#"+this_class.id+"_"+item).val()
                     if (value == null || value == "") continue
                     rule[item] = $.isNumeric(value) ? parseFloat(value) : value
@@ -688,8 +693,11 @@ class Rule_wizard extends Widget {
         $("#"+this.id+"_rule_id").val(rule_id)
         $("#"+this.id+"_rule_id").prop("disabled", true)
         // populate the form
-        for (var item of ["text", "severity", "type"]) {
-            if (item in rule) $("#"+this.id+"_"+item).val(rule[item])
+        for (var item of ["text", "severity", "type", "icon"]) {
+            if (item in rule) {
+                if ($("#"+this.id+"_"+item).hasClass("bootstrap-select")) $("#"+this.id+"_"+item).selectpicker("val", rule[item])
+                else $("#"+this.id+"_"+item).val(rule[item])
+            }
         }
         // populate disabled checkbox
         if ("disabled" in rule && rule["disabled"]) $("#"+this.id+"_disabled").prop("checked", true)

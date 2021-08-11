@@ -1,0 +1,5 @@
+device_ip: 
+local_ip: 
+suppress:
+  timeframe: 23-11
+  timeframe_severity_exception: alert

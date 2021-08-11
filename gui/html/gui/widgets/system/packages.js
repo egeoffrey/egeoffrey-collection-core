@@ -60,7 +60,7 @@ class Packages extends Widget {
         $("#"+this.id+"_table").DataTable(options);
         $("#"+this.id+"_table_text").html('<i class="fas fa-spinner fa-spin"></i> Loading')
         // ask for manifest files
-        this.listener = this.add_broadcast_listener("+/+", "MANIFEST", "#")
+        this.listener = this.add_manifest_listener()
     }
     
     // receive data and load it into the widget

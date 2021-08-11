@@ -7,6 +7,7 @@ egeoffrey/egeoffrey-notification-slack:master
 egeoffrey/egeoffrey-notification-smtp:master
 egeoffrey/egeoffrey-notification-mobile:master
 egeoffrey/egeoffrey-notification-telegram:master
+egeoffrey/egeoffrey-notification-chromecast:master
 egeoffrey/egeoffrey-service-command:master
 egeoffrey/egeoffrey-service-csv:master
 egeoffrey/egeoffrey-service-earthquake:master

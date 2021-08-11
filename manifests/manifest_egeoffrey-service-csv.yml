@@ -41,6 +41,6 @@ modules:
         name: prefix
         required: false
 package: egeoffrey-service-csv
-revision: 15
+revision: 1
 tags: service csv
-version: 1.0
+version: 1.1

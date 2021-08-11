@@ -337,8 +337,13 @@ class Gui extends Module {
         // deliver the message to any widget waiting for a message on that topic
         if (delivered == 0) {
             for (var topic in this.listeners) {
+                // normalize the pattern so to match also configuration files received directly
+                var topic_normalized = topic
+                if (topic_normalized.includes("*/*")) {
+                    topic_normalized = topic.replace("*/*","+/+")
+                }
                 // deliver the message to all the listeners
-                if (topic_matches_sub(topic, message.topic)) {
+                if (topic_matches_sub(topic_normalized, message.topic)) {
                     for (var widget of this.listeners[topic]) {
                         widget.on_message(message)
                         delivered++
@@ -403,7 +408,7 @@ class Gui extends Module {
 				for (var connection_id in connections["connections"]) {
 					var connection = connections["connections"][connection_id]
 					// add a new option to the select
-					$("#connections").append(new Option(connection["EGEOFFREY_ID"]+"/"+connection["EGEOFFREY_USERNAME"]+" ("+connection["EGEOFFREY_GATEWAY_HOSTNAME"]+":"+connection["EGEOFFREY_GATEWAY_PORT"]+")", connection_id));
+					$("#connections").append(new Option(connection["connection_name"], connection_id));
 				}
 			}
 			// configure change event for the session select
@@ -453,8 +458,13 @@ class Gui extends Module {
         this.configurations[message.args] = message
         // deliver the configuration to any widget waiting for it
         for (var topic in this.listeners) {
+            // normalize the pattern so to match also configuration files received directly
+            var topic_normalized = topic
+            if (topic_normalized.includes("*/*")) {
+                topic_normalized = topic.replace("*/*","+/+")
+            }
             // deliver the message to all the listeners
-            if (topic_matches_sub(topic, message.topic)) {
+            if (topic_matches_sub(topic_normalized, message.topic)) {
                 for (var widget of this.listeners[topic]) {
                     widget.on_configuration(message)
                 }

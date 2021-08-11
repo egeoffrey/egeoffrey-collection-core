@@ -75,7 +75,8 @@ class Modules extends Widget {
         $("#"+this.id+"_table_text").html('<i class="fas fa-spinner fa-spin"></i> Loading')
         this.request_data()
         // ask for manifest files
-        this.add_broadcast_listener("+/+", "MANIFEST", "#")
+        this.indexes = []
+        this.listener = this.add_manifest_listener()
     }
     
     // set the status to given module_id
@@ -104,7 +105,6 @@ class Modules extends Widget {
             discover_message.recipient = message.sender
             discover_message.command = "DISCOVER"
             discover_message.args = "*"
-            this.indexes = []
             this.send(discover_message)
         }
         // received a ping response

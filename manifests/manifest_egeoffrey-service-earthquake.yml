@@ -20,6 +20,6 @@ modules:
         placeholder: minmag=7
         required: true
 package: egeoffrey-service-earthquake
-revision: 25
+revision: 1
 tags: service earthquake
-version: 1.0
+version: 1.1

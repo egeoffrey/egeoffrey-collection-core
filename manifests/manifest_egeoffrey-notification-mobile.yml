@@ -17,6 +17,6 @@ modules:
       placeholder: Asadjaskld109213102312kljlcasldkd123
       required: true
 package: egeoffrey-notification-mobile
-revision: 3
+revision: 1
 tags: notification mobile ios android
-version: 1.0
+version: 1.1

@@ -42,6 +42,19 @@ class Widget {
         else gui.listeners[topic] = [this]
         return topic
     }
+
+    // wrap gui.add_manifest_listener()
+    add_manifest_listener(from_module="+/+") {
+        // if the manifest was already received, pass it along to the widget
+        for (var item in gui.manifests) {
+            this.on_message(gui.manifests[item])
+        }
+        var topic = gui.add_manifest_listener(from_module)
+        // whenever there will be a message matching this request, the widget will be notified
+        if (topic in gui.listeners && ! gui.listeners[topic].includes(this)) gui.listeners[topic].push(this)
+        else gui.listeners[topic] = [this]
+        return topic
+    }
     
     // wrap gui.add_broadcast_listener()
     add_broadcast_listener(from_module, command, args) {
