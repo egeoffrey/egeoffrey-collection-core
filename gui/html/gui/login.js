@@ -8,7 +8,9 @@ class Login {
         // set to true when the login button is pressed
         this.login_in_progress = false
         this.login_in_progress_timestamp = 0
-        this.login_in_progress_timeout = 3
+        this.login_in_progress_timeout = 5
+        // set to true when anonynmous guest user logs in
+        this.guest_login = false
         // set to true when we are waiting for the house configuration
         this.waiting_configuration_running = false
         this.waiting_configuration_timestamp = 0
@@ -58,6 +60,7 @@ class Login {
         else {
             $("#login_button").html(locale("login.login_button"))
             this.waiting_configuration_running = false
+            this.guest_login = false
         }
     }
     
@@ -145,8 +148,8 @@ class Login {
                         <div id="login_gateway_help" class="callout callout-info d-none">\
                             <p>The eGeoffrey Gateway is the main door for accessing eGeoffrey. All eGeoffrey components connects and interact via the gateway, ragardless where they are running:</p>\
                             <ul>\
-                                <li>If eGeoffrey is installed in your local network, the hostname is the host or IP address where eGeoffrey is running and by default port is 443 and SSL is disabled;</li>\
-                                <li>If connecting to <a class="text-primary" href="https://docs.egeoffrey.com/configure/remote/" target="_new">eGeoffrey Cloud Gateway</a>, the hostname is <code>gateway.egeoffrey.com</code>, port is 443 and SSL is enabled;</li>\
+                                <li>If eGeoffrey is installed in your local network, the hostname is the host or IP address where eGeoffrey is running and by default port is 443, SSL is disabled and protocol version is the one set when installing eGeoffrey (default v2);</li>\
+                                <li>If connecting to <a class="text-primary" href="https://docs.egeoffrey.com/configure/remote/" target="_new">eGeoffrey Cloud Gateway</a>, the hostname is <code>gateway.egeoffrey.com</code>, port is 443, SSL is enabled and protocol version is the one set when installing eGeoffrey (default v2);</li>\
                             </ul>\
                         </div>\
                         <div class="form-group has-feedback">\
@@ -157,7 +160,7 @@ class Login {
                         </div>\
                         <div class="form-group has-feedback">\
                             <select class="form-control" id="egeoffrey_gateway_version">\
-                                <option value="">Gateway protocol version</option>\
+                                <option value="">[select gateway protocol version]</option>\
                                 <option value="1">v1</option>\
                                 <option value="2">v2</option>\
                             </select>\
@@ -309,7 +312,8 @@ class Login {
                 // just return if no gateway is provided
                 if (window.EGEOFFREY_GATEWAY_HOSTNAME == "" || window.EGEOFFREY_GATEWAY_PORT == "" || window.EGEOFFREY_GATEWAY_VERSION == "") return
                 this_class.set_login_status("info", '<i class="fas fa-spin fa-spinner"></i> Connecting to the eGeoffrey gateway...')
-                this_class.log("debug", "Connecting to the eGeoffrey gateway...")
+                var ssl = window.EGEOFFREY_GATEWAY_SSL == 1 ? " [SSL]" : ""
+                this_class.log("info", "Connecting to the eGeoffrey gateway "+window.EGEOFFREY_GATEWAY_HOSTNAME+":"+window.EGEOFFREY_GATEWAY_PORT+ssl+" (v"+window.EGEOFFREY_GATEWAY_VERSION+")...")
 				// save user's connections
 				this_class.connections.save()
 				// redraw the saved connection select
@@ -375,7 +379,7 @@ class Login {
                     // login screen is visible and gui connected, time to hide the login screen
                     if (window.gui.connected) {
                         this_class.set_login_status("info", '<i class="fas fa-spin fa-spinner"></i> Connected. Looking for house configuration...')
-                        this_class.log("debug", "Connected. Looking for house configuration...")
+                        this_class.log("debug", "Connected. Looking for house configuration")
                         // wait for a the house configuration
                         this_class.waiting_configuration_running = true
                         this_class.waiting_configuration_timestamp = this_class.get_timestamp()
@@ -431,9 +435,16 @@ class Login {
                             window.gui.join()
                             this_class.set_login_status("warning", "House not found or database unreachable")
                             this_class.log("warning", "House not found or database unreachable")
-                            this_class.set_login_in_progress(false)
-                            $("#reconnect").modal("hide")
-                            $("#login").modal()
+                            // if this is an anonymous login, retry with v2 gateway protocol before giving up
+                            if (this_class.guest_login) {
+                                this_class.set_login_in_progress(false)
+                                $("#egeoffrey_gateway_version").val(2)
+                                $("#login_button").click()
+                            } else {
+                                this_class.set_login_in_progress(false)
+                                $("#reconnect").modal("hide")
+                                $("#login").modal()
+                            }
                         } else {
                             // connected and configured
                             $("#reconnect").modal("hide")
@@ -470,6 +481,8 @@ class Login {
 		var connection_id = this.connections.restore()
         // no saved connections found, load default credentials (set in env.js and env_custom.js)
         if (connection_id == null) {
+            // set guest login flag so if login would fail the first time, the other gateway protocols will be tested
+            this.guest_login = true
             var connection = {
                 "EGEOFFREY_GATEWAY_HOSTNAME": window.EGEOFFREY_GATEWAY_HOSTNAME,
                 "EGEOFFREY_GATEWAY_PORT": window.EGEOFFREY_GATEWAY_PORT,

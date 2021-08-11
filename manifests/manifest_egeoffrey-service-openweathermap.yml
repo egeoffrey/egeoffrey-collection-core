@@ -29,6 +29,6 @@ modules:
         placeholder: 70.11
         required: true
 package: egeoffrey-service-openweathermap
-revision: 24
+revision: 1
 tags: service weather
-version: 1.0
+version: 1.1

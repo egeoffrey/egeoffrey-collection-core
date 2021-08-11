@@ -43,6 +43,8 @@ class Config(Controller):
         self.supported_manifest_schema = 2
         # scheduler is used for scheduling config reload
         self.scheduler = Scheduler(self)
+        # keep track of received manifests
+        self.manifests = {}
         # status flags
         self.load_config_running = False
         self.clear_config_running = False
@@ -112,6 +114,8 @@ class Config(Controller):
     def publish_config(self, filename, version, content, recipient="*/*", retain=True):
         if filename != self.index_key: 
             self.log_debug("Publishing configuration "+filename+" (v"+str(version)+") for "+recipient)
+        if self.gateway_version >= 2:
+            retain = False
         message = Message(self)
         message.recipient = recipient
         message.command = "CONF"
@@ -362,6 +366,9 @@ class Config(Controller):
             self.rename_config_file(from_filename, to_filename, version)
         # a module just subscribed to a configuration topic
         elif message.command == "SUBSCRIBE":
+            # if config is not loaded yet, return, the sender will call back later
+            if self.load_config_running:
+                return
             # split pattern requested from configuration version
             match = re.match("^([^\/]+)\/(.+)$", message.get_data())
             if match is None: return
@@ -372,21 +379,34 @@ class Config(Controller):
             for topic in self.index:
                 # if the pattern subscribed matches the configuration topic
                 if mqtt.topic_matches_sub(pattern, topic):
+                    # when a service subscribes to all the sensors, just send over those associated with those service to avoid sending out too many messages
+                    if self.gateway_version >= 2 and message.sender.startswith("service/") and pattern == "sensors/#":
+                        if "service" not in self.index[topic]["content"] or "service/"+self.index[topic]["content"]["service"]["name"] != message.sender:
+                            continue
                     # respond to the module (directly) with the requested configuration file
-                    self.publish_config(topic, self.index[topic]["version"], self.index[topic]["content"], message.sender, False)
+                    self.publish_config(topic, self.index[topic]["version"], self.index[topic]["content"], message.sender)
             # ack the subscribe request so the sender module will not re-send the subscribe request message again
             ack_message = Message(self)
             ack_message.recipient = message.sender
             ack_message.command = "SUBSCRIBE_ACK"
             ack_message.set_data(message.get_data())
             self.send(ack_message)
-        # receive manifest file, it may contain default configurations
+        # receive manifest file (configuration is already loaded), it may contain default configurations
         elif message.command == "MANIFEST":
-            if message.is_null: return
+            if message.is_null: 
+                return
             manifest = message.get_data()
-            if manifest["manifest_schema"] != self.supported_manifest_schema: return
+            # ensure this is a manifest we can handle
+            if manifest["manifest_schema"] != self.supported_manifest_schema: 
+                return
             self.log_debug("Received manifest from "+message.sender)
-            if not self.accept_default_config or self.force_reload or not "default_config" in manifest: return
+            # if not accepting default configurations or if there are no default config, just return
+            if not self.accept_default_config or self.force_reload or not "default_config" in manifest: 
+                return
+            # ensure we have not already received the same manifest before
+            if message.sender in self.manifests and self.manifests[message.sender] == self.get_hash(str(manifest)):
+                return
+            self.manifests[message.sender] = self.get_hash(str(manifest))
             # if there is a default configuration in the manifest file, save it
             default_config = manifest["default_config"]
             for entry in default_config:

@@ -92,6 +92,10 @@ To configure each module included in this package, once started, click on the *'
   - Module configuration:
     - *bot_token**: the token of the Telegram bot you have created (https://core.telegram.org/bots#3-how-do-i-create-a-bot)
     - *chat_id**: the chat_id you want to send the message to (https://t.me/gettingidbot)
+- **notification/chromecast**: play a notification through a Chromecast device
+  - Module configuration:
+    - *device_ip**: the hostname/IP address of the Chromecast device (e.g. 192.168.0.53)
+    - *local_ip**: the IP address where this module runs (the device will connect back here to play the audio) (e.g. 192.168.0.254)
 - **service/command**: run system commands
   - Service configuration:
     - Mode 'actuator':
@@ -182,7 +186,7 @@ To function properly, when running in a Docker container, the following addition
 environment:
 - EGEOFFREY_LOGGING_LOCAL=0
 ports:
-- 80:80
+- 8081:8081
 volumes:
 - ./data/egeoffrey/logs:/egeoffrey/logs
 - ./data/egeoffrey/config:/egeoffrey/config
@@ -204,4 +208,4 @@ collection core
 
 ## Version
 
-The version of this egeoffrey-collection-core is 1.1-8 on the development branch.
+The version of this egeoffrey-collection-core is 1.2-1 on the development branch.

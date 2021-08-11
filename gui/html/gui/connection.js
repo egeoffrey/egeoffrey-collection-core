@@ -5,7 +5,7 @@ class Connections {
 		// local storage key to use
         this.key_connections = "EGEOFFREY_CONNECTIONS"
 		// config schema
-        this.config_schema = 1
+        this.config_schema = 2
     }
 
 	// return saved connections
@@ -14,12 +14,29 @@ class Connections {
 		var connections = localStorage.getItem(this.key_connections)
 		if (connections == null) return
 		connections = JSON.parse(connections)
+		// upgrade config file if needed
+		if (connections["config_schema"] == 1) {
+			if (connections != null) {
+				for (var old_connection_id in connections["connections"]) {
+					// set EGEOFFREY_GATEWAY_VERSION to 1
+					if (connections["connections"][old_connection_id]["EGEOFFREY_GATEWAY_VERSION"] == null) connections["connections"][old_connection_id]["EGEOFFREY_GATEWAY_VERSION"] = 1
+					var new_connection_id = connections["connections"][old_connection_id]["EGEOFFREY_GATEWAY_HOSTNAME"]+"_"+connections["connections"][old_connection_id]["EGEOFFREY_GATEWAY_PORT"]+"_"+connections["connections"][old_connection_id]["EGEOFFREY_GATEWAY_VERSION"]+"_"+connections["connections"][old_connection_id]["EGEOFFREY_ID"]+"_"+connections["connections"][old_connection_id]["EGEOFFREY_USERNAME"]
+					connections["connections"][new_connection_id] = connections["connections"][old_connection_id]
+					delete connections["connections"][old_connection_id]
+					// upgrade config schema
+					connections["config_schema"] = 2
+				}
+			}
+			// save connection information into the browser storage
+			localStorage.setItem(this.key_connections, JSON.stringify(connections))
+			this.get()
+			return
+		}
 		// ensure the config schema is supported
 		if (connections["config_schema"] != this.config_schema) return
 		if (connections != null) {
 			for (var connection_id in connections["connections"]) {
 				var connection = connections["connections"][connection_id]
-				if (connection["EGEOFFREY_GATEWAY_VERSION"] == null) connection["EGEOFFREY_GATEWAY_VERSION"] = 1
 				connections["connections"][connection_id]["connection_name"] = connection["EGEOFFREY_USERNAME"]+"@"+connection["EGEOFFREY_ID"]+" ("+connection["EGEOFFREY_GATEWAY_HOSTNAME"]+":"+connection["EGEOFFREY_GATEWAY_PORT"]+" v"+connection["EGEOFFREY_GATEWAY_VERSION"]+")"
 			}
 		}
@@ -104,7 +121,7 @@ class Connections {
 		}
 		// remember this connection
 		else {
-			var connection_id = window.EGEOFFREY_GATEWAY_HOSTNAME+"_"+window.EGEOFFREY_GATEWAY_PORT+"_"+"_"+window.EGEOFFREY_GATEWAY_VERSION+window.EGEOFFREY_ID+"_"+window.EGEOFFREY_USERNAME
+			var connection_id = window.EGEOFFREY_GATEWAY_HOSTNAME+"_"+window.EGEOFFREY_GATEWAY_PORT+"_"+window.EGEOFFREY_GATEWAY_VERSION+"_"+window.EGEOFFREY_ID+"_"+window.EGEOFFREY_USERNAME
 			// save current connection information
 			if (window.EGEOFFREY_REMEMBER_ME == 1) {
 				var connection = {
@@ -123,7 +140,7 @@ class Connections {
 					var old_connection = connections["connections"][connection_id]
 					if ("EGEOFFREY_CURRENT_PAGE" in old_connection) connection["EGEOFFREY_CURRENT_PAGE"] = old_connection["EGEOFFREY_CURRENT_PAGE"]
 				}
-				// add the connection information to the sesssions (or overwrite existing one)
+				// add the connection information to the sessions (or overwrite existing one)
 				connections["connections"][connection_id] = connection
 				// keep track of the last connection
 				connections["last_connection"] = connection_id
